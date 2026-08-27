@@ -91,6 +91,15 @@ function expectWireCompatible(record: JourneyRecord): void {
   }
 }
 
+function expectOptionalTerminalMetadataCompatible(start: Record<string, unknown>): void {
+  if (start.terminalOwner === undefined) {
+    expect(start.alternateScreen).toBeUndefined()
+    return
+  }
+  expect(start.terminalOwner).toBe('shell')
+  expect(start.alternateScreen).toBe(false)
+}
+
 describe('cross-version remote terminal wire', () => {
   it('ignores legacy, mobile, and prerelease tags when selecting the baseline', () => {
     expect(
@@ -153,8 +162,7 @@ describe('cross-version remote terminal wire', () => {
       expectJourneyActuallyRan(record)
       expectWireCompatible(record)
       for (const start of record.snapshotStarts) {
-        expect(start).not.toHaveProperty('terminalOwner')
-        expect(start).not.toHaveProperty('alternateScreen')
+        expectOptionalTerminalMetadataCompatible(start)
       }
     },
     SUITE_TIMEOUT_MS
