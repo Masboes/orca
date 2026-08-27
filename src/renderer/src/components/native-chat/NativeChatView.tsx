@@ -73,6 +73,7 @@ function NativeChatBridgeView({
   targetPtyId = null,
   launchAgent,
   resolvedAgent,
+  ownsTabWideLaunchDraft,
   onSwitchToTerminal,
   readTerminalScreen,
   contextMenuActions,
@@ -99,6 +100,7 @@ function NativeChatBridgeView({
           isVisible={isVisible}
           targetPtyId={targetPtyId}
           terminalTabId={terminalTabId}
+          ownsTabWideLaunchDraft={ownsTabWideLaunchDraft}
           onSwitchToTerminal={onSwitchToTerminal}
           readTerminalScreen={readTerminalScreen}
           contextMenuActions={contextMenuActions}
@@ -117,6 +119,7 @@ function NativeChatResolvedView({
   isVisible,
   targetPtyId,
   terminalTabId,
+  ownsTabWideLaunchDraft,
   onSwitchToTerminal,
   readTerminalScreen,
   contextMenuActions,
@@ -147,7 +150,8 @@ function NativeChatResolvedView({
     messages: session.messages,
     // 'awaiting' counts too: adopting a prefill against a transcript that hasn't
     // flushed would re-offer a prompt the user already submitted.
-    transcriptLoading: isNativeChatTranscriptUnsettled(session.readPhase)
+    transcriptLoading: isNativeChatTranscriptUnsettled(session.readPhase),
+    ownsTabWideLaunchDraft
   })
   // The live-session merge reconciles hooks with replayable transcript turn
   // boundaries; all working consumers must use that one lifecycle decision.
