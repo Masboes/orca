@@ -52,6 +52,7 @@ import {
 } from './browser-page-records'
 import {
   planBrowserPageConversion,
+  type BrowserPageConversionLeg,
   type BrowserPageConversionTarget
 } from './browser-page-conversion'
 import { releaseDocPreviewGrant } from '@/lib/doc-preview-grants'
@@ -285,7 +286,7 @@ export type BrowserSlice = {
   convertBrowserPage: (
     pageId: string,
     target: BrowserPageConversionTarget,
-    options?: { recordProvenance?: boolean }
+    options?: { leg?: BrowserPageConversionLeg }
   ) => BrowserPage | null
   reopenClosedBrowserPage: (workspaceId: string) => BrowserPage | null
   setActiveBrowserPage: (workspaceId: string, pageId: string) => void

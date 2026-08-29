@@ -5,7 +5,10 @@ import type {
   DocPreviewFileFailureReason
 } from '../../../../../shared/doc-preview-scheme'
 import type { BrowserPageConversionOrigin } from '../../../../../shared/browser-workspace-types'
-import { returnAcrossBrowserPageConversion } from '@/lib/browser-page-conversion-return'
+import {
+  advanceAcrossBrowserPageConversion,
+  returnAcrossBrowserPageConversion
+} from '@/lib/browser-page-conversion-history'
 import { BrowserGuestAnnotateOverlays } from '@/components/browser-pane/annotate/browser-guest-annotate-overlays'
 import { useGuestDragPassthrough } from '@/components/browser-pane/host-guest/use-guest-drag-passthrough'
 import { attachDocPreviewWebview } from './doc-preview-webview-attach'
@@ -46,7 +49,8 @@ export function HtmlDocPreview({
   holdsGuestFocus = false,
   runtimeEnvironmentId = null,
   externalSshTargetId = null,
-  convertedFrom = null
+  convertedFrom = null,
+  convertedTo = null
 }: {
   previewId: string
   filePath: string
@@ -58,6 +62,8 @@ export function HtmlDocPreview({
   externalSshTargetId?: string | null
   /** Set when the address bar converted this page; Back returns across it once guest history runs out. */
   convertedFrom?: BrowserPageConversionOrigin | null
+  /** Set when Back returned across a conversion to this page; Forward re-crosses it. */
+  convertedTo?: BrowserPageConversionOrigin | null
 }): React.JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const webviewRef = useRef<Electron.WebviewTag | null>(null)
@@ -80,23 +86,36 @@ export function HtmlDocPreview({
   const history = useDocPreviewWebviewHistory(webviewRef)
   const { sync: syncHistory, reset: resetHistory } = history
   // Why wrapped rather than a second control: guest history cannot survive a conversion (the
-  // guest was replaced), so once it runs out Back returns across the conversion instead of dying.
-  const historyWithConversionReturn = useMemo(
+  // guest was replaced), so once it runs out Back returns across the conversion — and Forward
+  // re-crosses it — instead of dying.
+  const historyWithConversionCrossings = useMemo(
     () =>
-      convertedFrom
+      convertedFrom || convertedTo
         ? {
             ...history,
-            canGoBack: true,
+            canGoBack: history.canGoBack || Boolean(convertedFrom),
+            canGoForward: history.canGoForward || Boolean(convertedTo),
             goBack: (): void => {
               if (history.canGoBack) {
                 history.goBack()
                 return
               }
-              returnAcrossBrowserPageConversion(previewId, convertedFrom)
+              if (convertedFrom) {
+                returnAcrossBrowserPageConversion(previewId, convertedFrom)
+              }
+            },
+            goForward: (): void => {
+              if (history.canGoForward) {
+                history.goForward()
+                return
+              }
+              if (convertedTo) {
+                advanceAcrossBrowserPageConversion(previewId, convertedTo)
+              }
             }
           }
         : history,
-    [convertedFrom, history, previewId]
+    [convertedFrom, convertedTo, history, previewId]
   )
 
   const worktreeRoot = useAppStore((store) => store.getKnownWorktreeById(worktreeId)?.path ?? null)
@@ -342,7 +361,7 @@ export function HtmlDocPreview({
         identity={identity}
         previewId={previewId}
         worktreeId={worktreeId}
-        history={historyWithConversionReturn}
+        history={historyWithConversionCrossings}
         loading={state === 'loading' && failureReason === null}
         onReload={handleReload}
         onHardReload={handleHardReload}

@@ -63,6 +63,21 @@ export const browserWorkspaceSchema: z.ZodType<BrowserWorkspace> = z.object({
   docLocation: browserPageDocLocationSchema.nullable().optional()
 })
 
+const browserPageConversionOriginSchema = z
+  .union([
+    z.object({ kind: z.literal('workspace-doc'), docLocation: browserPageDocLocationSchema }),
+    z.object({
+      kind: z.literal('url'),
+      url: z.string(),
+      browserRuntimeEnvironmentId: z.string().nullable().optional()
+    })
+  ])
+  .nullable()
+  .optional()
+  .transform((origin) =>
+    origin && origin.kind === 'url' && isDocPreviewUrl(origin.url) ? null : origin
+  )
+
 export const browserPageSchema = z.object({
   id: z.string(),
   workspaceId: z.string(),
@@ -90,24 +105,12 @@ export const browserPageSchema = z.object({
   // docLocation restores a workspace document as a blank New Tab — the page keeps its blank url
   // and loses the only field that said which document it was.
   docLocation: browserPageDocLocationSchema.nullable().optional(),
-  // Why persisted: Back's one-level return across an address-bar conversion should survive a
-  // restart. The url variant holds a store url that already passed every fence on its way in —
-  // and the same prefix fence every other url sink applies stands at this door too, so a session
-  // file carrying the preview scheme sheds the provenance rather than handing it back to Back.
-  convertedFrom: z
-    .union([
-      z.object({ kind: z.literal('workspace-doc'), docLocation: browserPageDocLocationSchema }),
-      z.object({
-        kind: z.literal('url'),
-        url: z.string(),
-        browserRuntimeEnvironmentId: z.string().nullable().optional()
-      })
-    ])
-    .nullable()
-    .optional()
-    .transform((origin) =>
-      origin && origin.kind === 'url' && isDocPreviewUrl(origin.url) ? null : origin
-    )
+  // Why persisted: one-level history across an address-bar conversion should survive a restart.
+  // The url variant holds a store url that already passed every fence on its way in — and the
+  // same prefix fence every other url sink applies stands at this door too, so a session file
+  // carrying the preview scheme sheds the provenance rather than handing it back to history.
+  convertedFrom: browserPageConversionOriginSchema,
+  convertedTo: browserPageConversionOriginSchema
 })
 
 const browserHistoryEntrySchema = z.object({

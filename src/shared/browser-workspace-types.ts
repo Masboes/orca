@@ -106,6 +106,8 @@ export type BrowserPage = {
   docLocation?: BrowserPageDocLocation | null
   /** Set on a page the address bar converted from the other kind; absent everywhere else. */
   convertedFrom?: BrowserPageConversionOrigin | null
+  /** Set on a page Back returned across a conversion to; Forward re-crosses it. */
+  convertedTo?: BrowserPageConversionOrigin | null
 }
 
 export type BrowserWorkspace = {

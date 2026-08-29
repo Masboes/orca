@@ -15,7 +15,10 @@ import type {
   BrowserPageConversionOrigin,
   BrowserViewportPresetId
 } from '../../../../../shared/browser-workspace-types'
-import { returnAcrossBrowserPageConversion } from '@/lib/browser-page-conversion-return'
+import {
+  advanceAcrossBrowserPageConversion,
+  returnAcrossBrowserPageConversion
+} from '@/lib/browser-page-conversion-history'
 import { convertBrowserPageToWorkspaceDoc } from '@/lib/file-preview'
 import type { GrabIntent } from '../describe-page/browser-page-types'
 
@@ -30,6 +33,7 @@ export function BrowserPageToolbar({
   canGoBack,
   canGoForward,
   convertedFrom,
+  convertedTo,
   loading,
   webviewRef,
   reloadMenuOpen,
@@ -68,6 +72,8 @@ export function BrowserPageToolbar({
   canGoForward: boolean
   /** Set on a page the address bar converted; Back returns across it once guest history runs out. */
   convertedFrom?: BrowserPageConversionOrigin | null
+  /** Set on a page Back returned to; Forward re-crosses it once guest history runs out. */
+  convertedTo?: BrowserPageConversionOrigin | null
   loading: boolean
   webviewRef: RefObject<Electron.WebviewTag | null>
   reloadMenuOpen: boolean
@@ -101,10 +107,11 @@ export function BrowserPageToolbar({
       showTourAnchors
       controls={{
         canGoBack: canGoBack || Boolean(convertedFrom),
-        canGoForward,
+        canGoForward: canGoForward || Boolean(convertedTo),
         loading,
-        // Why the fallback: guest history cannot survive a conversion (the guest was replaced), so
-        // once it runs out Back returns across the conversion instead of going dead.
+        // Why the fallbacks: guest history cannot survive a conversion (the guest was replaced),
+        // so once it runs out Back returns across the conversion — and Forward re-crosses it —
+        // instead of going dead.
         goBack: () => {
           if (canGoBack) {
             webviewRef.current?.goBack()
@@ -114,7 +121,15 @@ export function BrowserPageToolbar({
             returnAcrossBrowserPageConversion(browserPageId, convertedFrom)
           }
         },
-        goForward: () => webviewRef.current?.goForward(),
+        goForward: () => {
+          if (canGoForward) {
+            webviewRef.current?.goForward()
+            return
+          }
+          if (convertedTo) {
+            advanceAcrossBrowserPageConversion(browserPageId, convertedTo)
+          }
+        },
         reload: () => runReloadTrigger('button'),
         navigate: navigateToUrl
       }}

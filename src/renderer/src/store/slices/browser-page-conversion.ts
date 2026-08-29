@@ -21,6 +21,15 @@ export type BrowserPageConversionTarget =
   | { kind: 'web'; url: string; browserRuntimeEnvironmentId?: string | null }
   | { kind: 'workspace-doc'; docLocation: BrowserPageDocLocation }
 
+/**
+ * Which crossing of the conversion boundary this is. An address-bar conversion (absent) starts a
+ * new two-entry history: the destination records where it came from. `history-return` is Back
+ * crossing back — it consumes `convertedFrom` and records `convertedTo` on the page it restores,
+ * so Forward can re-cross. `history-advance` is Forward re-crossing — it consumes `convertedTo`
+ * and records `convertedFrom` again, so the pair ping-pongs exactly like two history entries.
+ */
+export type BrowserPageConversionLeg = 'history-return' | 'history-advance'
+
 export type BrowserPageConversionPlan = {
   oldPage: BrowserPage
   newPage: BrowserPage
@@ -43,11 +52,7 @@ export function planBrowserPageConversion(
   },
   pageId: string,
   target: BrowserPageConversionTarget,
-  options?: {
-    /** false for Back's return leg: arriving back consumes the provenance rather than growing a
-     *  ping-pong chain — after returning, Back means the guest's own history again. */
-    recordProvenance?: boolean
-  }
+  options?: { leg?: BrowserPageConversionLeg }
 ): BrowserPageConversionPlan | null {
   const oldPage = findPage(state.browserPagesByWorkspace, pageId)
   if (!oldPage) {
@@ -69,21 +74,22 @@ export function planBrowserPageConversion(
     return null
   }
 
-  const convertedFrom: BrowserPageConversionOrigin | null =
-    options?.recordProvenance === false
-      ? null
-      : oldPage.docLocation
-        ? { kind: 'workspace-doc', docLocation: oldPage.docLocation }
-        : // Why the stored url and not the guest's: the store url passed every fence on its way in,
-          // so provenance can be persisted without opening a new door. Ownership rides along —
-          // absent stays absent, so a worktree-inferred remote page returns as one.
-          {
-            kind: 'url',
-            url: oldPage.url,
-            ...(oldPage.browserRuntimeEnvironmentId !== undefined
-              ? { browserRuntimeEnvironmentId: oldPage.browserRuntimeEnvironmentId }
-              : {})
-          }
+  const departed: BrowserPageConversionOrigin = oldPage.docLocation
+    ? { kind: 'workspace-doc', docLocation: oldPage.docLocation }
+    : // Why the stored url and not the guest's: the store url passed every fence on its way in,
+      // so provenance can be persisted without opening a new door. Ownership rides along —
+      // absent stays absent, so a worktree-inferred remote page returns as one.
+      {
+        kind: 'url',
+        url: oldPage.url,
+        ...(oldPage.browserRuntimeEnvironmentId !== undefined
+          ? { browserRuntimeEnvironmentId: oldPage.browserRuntimeEnvironmentId }
+          : {})
+      }
+  // The crossed pointer is consumed by construction — the new page never inherits either field —
+  // so each leg leaves exactly one pointer behind and history stays two entries deep.
+  const convertedFrom = options?.leg === 'history-return' ? null : departed
+  const convertedTo = options?.leg === 'history-return' ? departed : null
 
   const newPage: BrowserPage = {
     ...(target.kind === 'workspace-doc'
@@ -112,7 +118,8 @@ export function planBrowserPageConversion(
             ? target.browserRuntimeEnvironmentId
             : (oldPage.browserRuntimeEnvironmentId ?? null)
         )),
-    ...(convertedFrom ? { convertedFrom } : {})
+    ...(convertedFrom ? { convertedFrom } : {}),
+    ...(convertedTo ? { convertedTo } : {})
   }
 
   const currentPages = state.browserPagesByWorkspace[workspace.id] ?? []

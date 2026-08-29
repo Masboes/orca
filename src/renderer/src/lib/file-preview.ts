@@ -15,6 +15,7 @@ import { findSiblingGroupId } from '@/store/slices/tabs'
 import { browserPageDocLocationsEqual } from '../../../shared/browser-page-doc-location'
 import type { BrowserPageDocLocation } from '../../../shared/browser-workspace-types'
 import { findPage } from '@/store/slices/browser-page-records'
+import type { BrowserPageConversionLeg } from '@/store/slices/browser-page-conversion'
 import { ORCA_BROWSER_BLANK_URL } from '../../../shared/constants'
 
 export type PreviewableLanguage = 'html'
@@ -246,14 +247,15 @@ function findWorkspaceShowingDoc(
 export function convertBrowserPageToWorkspaceDoc(
   pageId: string,
   docLocation: BrowserPageDocLocation,
-  options?: { recordProvenance?: boolean }
+  options?: { leg?: BrowserPageConversionLeg }
 ): 'activated-existing' | 'opened-in-owning-worktree' | 'converted' | 'failed' {
   const state = useAppStore.getState()
-  // Why Back's return leg skips reuse: Back means "this tab, as it was" — activating another tab
-  // showing the document would leave this one a web page with live provenance, so Back could jump
-  // there forever. The return leg's document was this tab's own, so converting in place is right.
-  const isReturnLeg = options?.recordProvenance === false
-  const existing = isReturnLeg ? null : findWorkspaceShowingDoc(state, docLocation)
+  // Why a history leg skips reuse: Back and Forward both mean "this tab, as it was" — activating
+  // another tab showing the document would leave this one a web page with live provenance, so
+  // history could jump there forever. A history leg's document was this tab's own, so converting
+  // in place is right.
+  const isHistoryLeg = options?.leg !== undefined
+  const existing = isHistoryLeg ? null : findWorkspaceShowingDoc(state, docLocation)
   if (existing) {
     // Why the worktree switches first: activation is deliberately scoped to the active worktree,
     // so without the switch a cross-worktree reuse would happen entirely out of sight.
@@ -276,7 +278,7 @@ export function convertBrowserPageToWorkspaceDoc(
   // be the reader's surface under the per-worktree activity slots — its guest would never take
   // focus, and every link in the document would be a dead end.
   const owningPage = findPage(state.browserPagesByWorkspace, pageId)
-  if (!isReturnLeg && owningPage && owningPage.worktreeId !== docLocation.worktreeId) {
+  if (!isHistoryLeg && owningPage && owningPage.worktreeId !== docLocation.worktreeId) {
     // The reader follows the document to its worktree; opening it out of sight is indistinguishable
     // from nothing having happened.
     if (state.activeWorktreeId !== docLocation.worktreeId) {

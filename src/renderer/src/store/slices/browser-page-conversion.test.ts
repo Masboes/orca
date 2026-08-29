@@ -201,8 +201,8 @@ describe('convertBrowserPage doc→doc retarget', () => {
   })
 })
 
-describe('convertBrowserPage Back return leg', () => {
-  it('consumes provenance on the return conversion so Back cannot ping-pong', () => {
+describe('convertBrowserPage history legs', () => {
+  it('the return leg swaps convertedFrom for convertedTo, so Forward can re-cross', () => {
     const store = createStoreWithWorktree()
     const { tabId, pageId } = createDocTab(store)
 
@@ -211,18 +211,55 @@ describe('convertBrowserPage Back return leg', () => {
       url: 'https://example.com/'
     })
     expect(webPage?.convertedFrom).toEqual({ kind: 'workspace-doc', docLocation: DOC_LOCATION })
+    expect(webPage?.convertedTo ?? null).toBeNull()
 
     const returned = store
       .getState()
       .convertBrowserPage(
         webPage?.id ?? '',
         { kind: 'workspace-doc', docLocation: DOC_LOCATION },
-        { recordProvenance: false }
+        { leg: 'history-return' }
       )
 
     expect(returned?.docLocation).toEqual(DOC_LOCATION)
     expect(returned?.convertedFrom ?? null).toBeNull()
-    expect(store.getState().browserPagesByWorkspace[tabId]?.[0]?.convertedFrom ?? null).toBeNull()
+    // Ownership rides the forward pointer too — explicit null keeps the page client-local.
+    const expectedForward = {
+      kind: 'url',
+      url: 'https://example.com/',
+      browserRuntimeEnvironmentId: null
+    }
+    expect(returned?.convertedTo).toEqual(expectedForward)
+    // Forward's target survives the session schema (z.object strips what it does not name).
+    const parsed = browserPageSchema.parse(store.getState().browserPagesByWorkspace[tabId]?.[0])
+    expect(parsed.convertedTo).toEqual(expectedForward)
+  })
+
+  it('the advance leg re-records convertedFrom and consumes convertedTo — a two-entry ping-pong', () => {
+    const store = createStoreWithWorktree()
+    const { pageId } = createDocTab(store)
+    const webPage = store
+      .getState()
+      .convertBrowserPage(pageId, { kind: 'web', url: 'https://example.com/' })
+    const docPage = store
+      .getState()
+      .convertBrowserPage(
+        webPage?.id ?? '',
+        { kind: 'workspace-doc', docLocation: DOC_LOCATION },
+        { leg: 'history-return' }
+      )
+
+    const advanced = store
+      .getState()
+      .convertBrowserPage(
+        docPage?.id ?? '',
+        { kind: 'web', url: 'https://example.com/' },
+        { leg: 'history-advance' }
+      )
+
+    expect(advanced?.url).toBe('https://example.com/')
+    expect(advanced?.convertedFrom).toEqual({ kind: 'workspace-doc', docLocation: DOC_LOCATION })
+    expect(advanced?.convertedTo ?? null).toBeNull()
   })
 })
 
@@ -332,7 +369,7 @@ describe('convertBrowserPage placement and activation', () => {
         url: 'https://remote.example/',
         browserRuntimeEnvironmentId: 'env-1'
       },
-      { recordProvenance: false }
+      { leg: 'history-return' }
     )
     expect(returned?.browserRuntimeEnvironmentId).toBe('env-1')
   })
@@ -346,7 +383,7 @@ describe('convertBrowserPage placement and activation', () => {
       .convertBrowserPage(
         pageId,
         { kind: 'web', url: 'https://remote.example/', browserRuntimeEnvironmentId: undefined },
-        { recordProvenance: false }
+        { leg: 'history-return' }
       )
     expect(returned).not.toBeNull()
     expect('browserRuntimeEnvironmentId' in (returned ?? {})).toBe(false)

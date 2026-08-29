@@ -226,6 +226,85 @@ test('converts a preview to a web tab and back from the address bar', async ({
       .toContain(FIXTURE_HEADING)
     await expect.poll(() => readDocPreviewGuestUrl(page)).toMatch(/^orca-preview:\/\//)
 
+    // Forward re-crosses what Back consumed: the returned-to preview carries the web page as its
+    // forward target, and Forward rebuilds it — then Back still works, a real two-entry history.
+    // The converted web page is client-local (the doc it replaced held a desktop-minted grant),
+    // which is the scope of the crossing: a runtime-owned client-hosted origin cannot be rebuilt
+    // by a crossing yet, because the conversion closed its remote page (STA-5872).
+    await page.getByRole('button', { name: 'Forward', exact: true }).click()
+    await expect
+      .poll(
+        async () =>
+          (await readPairedHtmlPreviewInventory(page, inventoryArgs)).docWorkspaces.length,
+        { timeout: 60_000, message: 'Forward never re-crossed the conversion' }
+      )
+      .toBe(0)
+    await expect
+      .poll(() => page.locator('webview').last().getAttribute('src'), { timeout: 30_000 })
+      .toContain(marker.origin)
+    await page.getByRole('button', { name: 'Back', exact: true }).click()
+    await expect
+      .poll(
+        async () =>
+          (await readPairedHtmlPreviewInventory(page, inventoryArgs)).docWorkspaces.length,
+        { timeout: 60_000, message: 'Back after Forward never returned across the conversion' }
+      )
+      .toBe(1)
+    await expect
+      .poll(() => readDocPreviewRenderedText(page, 'h1'), { timeout: 60_000 })
+      .toContain(FIXTURE_HEADING)
+
+    // The other side of the two-entry history, on the same client-local tab: Forward to the web
+    // page, type the document's path over it, then Back restores the web page and the WEB
+    // toolbar's Forward (not the preview's) re-crosses to the document.
+    await page.getByRole('button', { name: 'Forward', exact: true }).click()
+    await expect
+      .poll(
+        async () =>
+          (await readPairedHtmlPreviewInventory(page, inventoryArgs)).docWorkspaces.length,
+        { timeout: 60_000, message: 'the second Forward never re-crossed the conversion' }
+      )
+      .toBe(0)
+    // The split pane squeezes the address input to zero width (every other toolbar control is
+    // shrink-0); focusing the bar overlays it across the toolbar (#11090). Click the slot — the
+    // bar forwards padding clicks to the input — so it expands before typing.
+    const convertedAddressSlot = page.locator('[data-browser-chrome-address-slot]')
+    await expect(convertedAddressSlot).toBeVisible({ timeout: 30_000 })
+    await convertedAddressSlot.click()
+    const convertedAddressInput = convertedAddressSlot.locator('input')
+    await expect(convertedAddressInput).toBeVisible({ timeout: 30_000 })
+    await convertedAddressInput.fill(docFilePath)
+    await convertedAddressInput.press('Enter')
+    await expect
+      .poll(
+        async () =>
+          (await readPairedHtmlPreviewInventory(page, inventoryArgs)).docWorkspaces.length,
+        { timeout: 60_000, message: 'the typed path never converted the client-local web tab' }
+      )
+      .toBe(1)
+    await page.getByRole('button', { name: 'Back', exact: true }).click()
+    await expect
+      .poll(
+        async () =>
+          (await readPairedHtmlPreviewInventory(page, inventoryArgs)).docWorkspaces.length,
+        { timeout: 60_000, message: 'Back never restored the typed-over web page' }
+      )
+      .toBe(0)
+    await expect
+      .poll(() => page.locator('webview').last().getAttribute('src'), { timeout: 30_000 })
+      .toContain(marker.origin)
+    await page.getByRole('button', { name: 'Forward', exact: true }).click()
+    await expect
+      .poll(
+        async () =>
+          (await readPairedHtmlPreviewInventory(page, inventoryArgs)).docWorkspaces.length,
+        { timeout: 60_000, message: "the web toolbar's Forward never re-crossed to the document" }
+      )
+      .toBe(1)
+    await expect
+      .poll(() => readDocPreviewRenderedText(page, 'h1'), { timeout: 60_000 })
+      .toContain(FIXTURE_HEADING)
+
     // Reverse conversion by typing: close the preview, open a web tab, type the document's path.
     const returned = requireSingleDocWorkspace(
       await readPairedHtmlPreviewInventory(page, inventoryArgs)

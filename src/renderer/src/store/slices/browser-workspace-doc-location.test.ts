@@ -461,9 +461,9 @@ describe('a browser page that shows a workspace document', () => {
   })
 })
 
-// The provenance field holds a url the way page.url does, so the disk door applies the same
-// prefix fence: a session file carrying the preview scheme sheds the provenance, never Back.
-describe('convertedFrom at the session schema door', () => {
+// The provenance fields hold a url the way page.url does, so the disk door applies the same
+// prefix fence: a session file carrying the preview scheme sheds the provenance, never history.
+describe('conversion provenance at the session schema door', () => {
   const PAGE_ROW = {
     id: 'page-1',
     workspaceId: 'ws-1',
@@ -498,5 +498,19 @@ describe('convertedFrom at the session schema door', () => {
       url: 'https://example.com/',
       browserRuntimeEnvironmentId: 'env-1'
     })
+  })
+
+  it('applies the same fence to convertedTo, Forward’s side of the crossing', () => {
+    const tainted = browserPageSchema.parse({
+      ...PAGE_ROW,
+      convertedTo: { kind: 'url', url: LIVE_GRANT_URL }
+    })
+    expect(tainted.convertedTo ?? null).toBeNull()
+
+    const kept = browserPageSchema.parse({
+      ...PAGE_ROW,
+      convertedTo: { kind: 'url', url: 'https://example.com/' }
+    })
+    expect(kept.convertedTo).toEqual({ kind: 'url', url: 'https://example.com/' })
   })
 })

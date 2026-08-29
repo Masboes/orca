@@ -540,28 +540,29 @@ describe('convertBrowserPageToWorkspaceDoc', () => {
     )
   })
 
-  // Back means "this tab, as it was": the return leg converts in place even when the document is
-  // also open elsewhere, or Back would jump to the other tab forever while provenance stays live.
-  it('skips reuse on the return leg and converts in place', () => {
-    mocks.browserTabsByWorktree = {
-      'wt-1': [{ id: 'browser-9', docLocation: null }]
-    }
-    mocks.browserPagesByWorkspace = {
-      'browser-9': [{ id: 'page-doc', worktreeId: 'wt-1', docLocation: DOC_LOCATION }],
-      'browser-1': [{ id: 'page-1', worktreeId: 'wt-1' }]
-    }
-    mocks.convertBrowserPage.mockReturnValue({ id: 'new-page' })
+  // Back and Forward mean "this tab, as it was": a history leg converts in place even when the
+  // document is also open elsewhere, or history would jump to the other tab forever.
+  it.each(['history-return', 'history-advance'] as const)(
+    'skips reuse on the %s leg and converts in place',
+    (leg) => {
+      mocks.browserTabsByWorktree = {
+        'wt-1': [{ id: 'browser-9', docLocation: null }]
+      }
+      mocks.browserPagesByWorkspace = {
+        'browser-9': [{ id: 'page-doc', worktreeId: 'wt-1', docLocation: DOC_LOCATION }],
+        'browser-1': [{ id: 'page-1', worktreeId: 'wt-1' }]
+      }
+      mocks.convertBrowserPage.mockReturnValue({ id: 'new-page' })
 
-    const outcome = convertBrowserPageToWorkspaceDoc('page-1', DOC_LOCATION, {
-      recordProvenance: false
-    })
+      const outcome = convertBrowserPageToWorkspaceDoc('page-1', DOC_LOCATION, { leg })
 
-    expect(outcome).toBe('converted')
-    expect(mocks.setActiveBrowserTab).not.toHaveBeenCalled()
-    expect(mocks.convertBrowserPage).toHaveBeenCalledWith(
-      'page-1',
-      { kind: 'workspace-doc', docLocation: DOC_LOCATION },
-      { recordProvenance: false }
-    )
-  })
+      expect(outcome).toBe('converted')
+      expect(mocks.setActiveBrowserTab).not.toHaveBeenCalled()
+      expect(mocks.convertBrowserPage).toHaveBeenCalledWith(
+        'page-1',
+        { kind: 'workspace-doc', docLocation: DOC_LOCATION },
+        { leg }
+      )
+    }
+  )
 })
