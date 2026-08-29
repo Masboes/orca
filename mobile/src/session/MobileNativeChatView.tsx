@@ -209,7 +209,7 @@ export function MobileNativeChatView({
     }
     const t = setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 60)
     return () => clearTimeout(t)
-  }, [data.length, atBottom, keyboardInset])
+  }, [data.length, atBottom, keyboardInset, dockHeight])
 
   const handleSend = useCallback(
     async (text: string): Promise<boolean> => {

@@ -12,3 +12,8 @@ dist/
 *.mobileprovision
 *.orig.*
 web-build/
+
+# Klim trial fonts — evaluation only. Their licence permits internal testing but
+# not redistribution, and this fork is public, so these must never be committed.
+# Replace with licensed files (and remove this rule) if Tiempos is purchased.
+assets/fonts/TiemposText-*.otf

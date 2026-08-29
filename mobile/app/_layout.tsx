@@ -5,10 +5,8 @@ import { StatusBar } from 'expo-status-bar'
 import * as SplashScreen from 'expo-splash-screen'
 import * as SystemUI from 'expo-system-ui'
 import { useFonts } from 'expo-font'
-import { Lora_400Regular } from '@expo-google-fonts/lora/400Regular'
-import { Lora_400Regular_Italic } from '@expo-google-fonts/lora/400Regular_Italic'
-import { Lora_600SemiBold } from '@expo-google-fonts/lora/600SemiBold'
-import { Lora_700Bold } from '@expo-google-fonts/lora/700Bold'
+// Klim trial fonts, evaluation only — gitignored, never committed. Swap these
+// for licensed files if Tiempos is bought; the token names below do not change.
 import * as Notifications from 'expo-notifications'
 import * as Linking from 'expo-linking'
 import { colors, statusBarStyle } from '../src/theme/mobile-theme'
@@ -167,10 +165,10 @@ export default function RootLayout() {
   // Hold the splash until the serif is resolved, so prose does not paint in the
   // fallback face and reflow a frame later.
   const [fontsLoaded] = useFonts({
-    Lora_400Regular,
-    Lora_400Regular_Italic,
-    Lora_600SemiBold,
-    Lora_700Bold
+    TiemposText_Regular: require('../assets/fonts/TiemposText-Regular.otf'),
+    TiemposText_RegularItalic: require('../assets/fonts/TiemposText-RegularItalic.otf'),
+    TiemposText_Semibold: require('../assets/fonts/TiemposText-Semibold.otf'),
+    TiemposText_Bold: require('../assets/fonts/TiemposText-Bold.otf')
   })
 
   const onNavigatorLayout = useCallback(async () => {

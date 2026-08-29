@@ -48,13 +48,13 @@ export const styles = StyleSheet.create({
   },
   // Docked over the transcript. `bottom` is set inline from the keyboard inset
   // so it rides above the IME rather than behind it.
+  // Transparent: only the composer card itself occludes. Prose stays visible in
+  // the gutters around it and is clipped by the card's own edge, which is what
+  // leaves half a glyph showing as a line passes under.
   dock: {
     position: 'absolute',
     left: 0,
-    right: 0,
-    // Opaque: prose passing underneath is clipped by this edge, which is what
-    // leaves half a glyph showing as a line goes under.
-    backgroundColor: colors.bgBase
+    right: 0
   },
   listContent: {
     paddingVertical: spacing.sm,
