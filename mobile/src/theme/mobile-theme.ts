@@ -194,8 +194,8 @@ export const typography = {
   // Agent prose only. UI chrome stays on the system sans — mixing a serif into
   // buttons and tabs reads as costume rather than design. Registered in
   // app/_layout.tsx; these names must match the useFonts keys.
-  serifFamily: 'TiemposText_Regular' as const,
-  serifItalicFamily: 'TiemposText_RegularItalic' as const,
-  serifSemiBoldFamily: 'TiemposText_Semibold' as const,
-  serifBoldFamily: 'TiemposText_Bold' as const
+  serifFamily: 'Lora_400Regular' as const,
+  serifItalicFamily: 'Lora_400Regular_Italic' as const,
+  serifSemiBoldFamily: 'Lora_600SemiBold' as const,
+  serifBoldFamily: 'Lora_700Bold' as const
 } as const
