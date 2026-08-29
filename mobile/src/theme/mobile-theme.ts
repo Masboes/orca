@@ -11,6 +11,11 @@ export const darkColors = {
   borderSubtle: '#2a2a2a',
   editorSurface: '#1e1e1e',
 
+  // Subtle lift over whatever sits behind it, for surfaces that overlay the
+  // scroll background rather than replace it. Alpha, not a flat color, so it
+  // composites over both bgBase and bgPanel.
+  surfaceTranslucent: 'rgba(255,255,255,0.05)',
+
   textPrimary: '#e0e0e0',
   textSecondary: '#a1a1a1',
   textMuted: '#8c8c8c',
@@ -67,6 +72,8 @@ export const lightColors: ThemeColors = {
   bgRaised: '#ededed',
   borderSubtle: '#d8d8d8',
   editorSurface: '#fbfbfb',
+
+  surfaceTranslucent: 'rgba(0,0,0,0.05)',
 
   textPrimary: '#1a1a1a',
   textSecondary: '#4a4a4a',
