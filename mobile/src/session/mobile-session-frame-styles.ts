@@ -33,7 +33,10 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     elevation: 20
   },
   sessionChromeFade: {
-    ...StyleSheet.absoluteFillObject
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0
   },
   sessionTopBar: {
     minHeight: 34,

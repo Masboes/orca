@@ -25,6 +25,11 @@ export const darkColors = {
   // as nearer rather than as a darker well cut into the page.
   surfaceElevated: '#212121',
 
+  // bgBase at zero alpha. Gradients must end here rather than on 'transparent',
+  // which is rgba(0,0,0,0) — interpolating to it drags the midtones through
+  // black and dirties the fade.
+  bgBaseFade: 'rgba(17,17,17,0)',
+
   textPrimary: '#e0e0e0',
   textSecondary: '#a1a1a1',
   textMuted: '#8c8c8c',
@@ -87,6 +92,7 @@ export const lightColors: ThemeColors = {
   surfaceTranslucent: 'rgba(0,0,0,0.04)',
   bubbleUser: '#efede5',
   surfaceElevated: '#ffffff',
+  bgBaseFade: 'rgba(250,249,245,0)',
 
   textPrimary: '#1a1a1a',
   textSecondary: '#4a4a4a',

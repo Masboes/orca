@@ -287,6 +287,11 @@ import { styles } from '../../../../src/session/mobile-session-styles'
 
 // Height of the tab-count line, which the transcript is allowed to run beneath.
 const HEADER_FADE_ZONE = 18
+
+// The ramp continues this far below the chrome. Without it the whole transition
+// has to happen inside HEADER_FADE_ZONE, which reads as an edge rather than a
+// dissolve, and leaves content fully solid right up against the tab-count line.
+const HEADER_FADE_TAIL = 36
 import type { DiffComment } from '../../../../../src/shared/diff-comment-types'
 import type { TerminalQuickCommand } from '../../../../../src/shared/terminal-quick-command-types'
 import type {
@@ -4232,7 +4237,11 @@ export default function SessionScreen() {
   // reliably hittable.
   const chromeFadeZone = tabStripOpen || chromeHeight === 0 ? 0 : HEADER_FADE_ZONE
   const chromeContentInset = Math.max(0, chromeHeight - chromeFadeZone)
-  const chromeFadeStart = chromeHeight > 0 ? chromeContentInset / chromeHeight : 1
+  const chromeFadeTail = chromeFadeZone > 0 ? HEADER_FADE_TAIL : 0
+  const chromeFadeHeight = chromeHeight + chromeFadeTail
+  // Opaque down to the title's baseline, then a single ramp across the
+  // tab-count line and on into the transcript.
+  const chromeFadeStart = chromeFadeHeight > 0 ? chromeContentInset / chromeFadeHeight : 1
 
   // Why: iOS keyboard height includes the home-indicator inset; Android IME height does not.
   const keyboardLift =
@@ -4392,8 +4401,8 @@ export default function SessionScreen() {
         >
           <LinearGradient
             pointerEvents="none"
-            style={styles.sessionChromeFade}
-            colors={[colors.bgBase, colors.bgBase, 'transparent']}
+            style={[styles.sessionChromeFade, { height: chromeFadeHeight }]}
+            colors={[colors.bgBase, colors.bgBase, colors.bgBaseFade]}
             locations={[0, chromeFadeStart, 1]}
           />
           <View style={styles.sessionTopBar}>
