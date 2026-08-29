@@ -34,6 +34,7 @@ import {
   MobileNativeChatSessionOptionPickers,
   type MobileNativeChatSessionOptionPickersProps
 } from './MobileNativeChatSessionOptionPickers'
+import { MobileAgentWorkingIndicator } from './MobileAgentWorkingIndicator'
 import type { PendingNativeChatImage } from './mobile-native-chat-image-attachment'
 
 const NO_FILE_PATHS: string[] = []
@@ -69,6 +70,10 @@ type Props = {
    *  an idle session spends no vertical space on it. */
   toolsExpanded?: boolean
   onToggleTools?: () => void
+  /** While the agent runs the send affordance becomes Stop, per chat
+   *  convention: the control is already under the thumb that just sent. */
+  agentWorking?: boolean
+  onStop?: () => void
 }
 
 export function MobileNativeChatComposer({
@@ -91,7 +96,9 @@ export function MobileNativeChatComposer({
   filePaths = NO_FILE_PATHS,
   onNeedFiles,
   toolsExpanded = false,
-  onToggleTools
+  onToggleTools,
+  agentWorking = false,
+  onStop
 }: Props): React.JSX.Element {
   const [cursor, setCursor] = useState(0)
   // Transiently drives the native caret after a mid-text autocomplete insert,
@@ -267,6 +274,7 @@ export function MobileNativeChatComposer({
                 sendInFlight={sending || isAttaching}
               />
             ) : null}
+            {agentWorking ? <MobileAgentWorkingIndicator /> : null}
             <View style={styles.actionSpacer} />
             {onMicPress ? (
               <Pressable
@@ -291,20 +299,24 @@ export function MobileNativeChatComposer({
               </Pressable>
             ) : null}
             <Pressable
-              accessibilityLabel="Send message"
+              accessibilityLabel={agentWorking ? 'Stop the agent' : 'Send message'}
               style={({ pressed }) => [
                 styles.sendButton,
-                !canSend && styles.sendButtonDisabled,
-                pressed && canSend && styles.pressed
+                !agentWorking && !canSend && styles.sendButtonDisabled,
+                pressed && (agentWorking || canSend) && styles.pressed
               ]}
-              onPress={handleSend}
-              disabled={!canSend}
+              onPress={agentWorking ? onStop : handleSend}
+              disabled={!agentWorking && !canSend}
             >
-              <ArrowUp
-                size={20}
-                color={canSend ? colors.bgBase : colors.textMuted}
-                strokeWidth={2.6}
-              />
+              {agentWorking ? (
+                <Square size={14} color={colors.bgBase} strokeWidth={2.6} fill={colors.bgBase} />
+              ) : (
+                <ArrowUp
+                  size={20}
+                  color={canSend ? colors.bgBase : colors.textMuted}
+                  strokeWidth={2.6}
+                />
+              )}
             </Pressable>
           </View>
         </View>

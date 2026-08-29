@@ -21,7 +21,6 @@ import {
   type MobileNativeChatPendingItem
 } from './mobile-native-chat-render-data'
 import { useMobileNativeChatPinchGesture } from './use-mobile-native-chat-pinch-gesture'
-import { MobileNativeChatWorkingBar } from './MobileNativeChatWorkingBar'
 import type { PendingNativeChatImage } from './mobile-native-chat-image-attachment'
 import { MobileNativeChatComposer } from './MobileNativeChatComposer'
 import type { MobileNativeChatSessionOptionPickersProps } from './MobileNativeChatSessionOptionPickers'
@@ -405,7 +404,6 @@ export function MobileNativeChatView({
           onAnswer={async (text) => (await onAnswerQuestion?.(text)) ?? false}
         />
       ) : null}
-      {agentWorking ? <MobileNativeChatWorkingBar onStop={onStop} /> : null}
       {sendErrorMessage ? (
         // This banner is the only channel for a send failure — announce it.
         <View
@@ -433,6 +431,8 @@ export function MobileNativeChatView({
         onMicPressOut={onMicPressOut}
         toolsExpanded={toolsExpanded}
         onToggleTools={() => setToolsExpanded((v) => !v)}
+        agentWorking={agentWorking}
+        onStop={onStop}
         disabled={lockReason !== null}
         placeholder={
           lockReason === 'disconnected'
