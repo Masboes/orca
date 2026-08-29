@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@expo-google-fonts/literata": "^0.4.3",
+    "@expo-google-fonts/lora": "^0.4.2",
     "@expo-google-fonts/source-serif-4": "^0.4.1",
     "@noble/hashes": "1.8.0",
     "@orca/expo-two-way-audio": "file:./packages/expo-two-way-audio",
