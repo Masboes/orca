@@ -21,11 +21,10 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     minWidth: 0
   },
   sessionChrome: {
-    // Same ground as the page: a distinct panel tone made the header read as a
-    // slab of chrome rather than the top of the content.
-    backgroundColor: colors.bgBase,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.borderSubtle
+    // Same ground as the page, and no rule beneath it: the transcript's top
+    // fade is the transition now, and a hard edge under it reads as a seam the
+    // fade is trying to dissolve.
+    backgroundColor: colors.bgBase
   },
   sessionTopBar: {
     minHeight: 34,
@@ -85,7 +84,7 @@ export const mobileSessionFrameStyles = StyleSheet.create({
   sessionTitle: {
     color: colors.textPrimary,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '500',
     textAlign: 'center'
   },
   // Flips the disclosure chevron when the tab strip is showing.
@@ -100,7 +99,7 @@ export const mobileSessionFrameStyles = StyleSheet.create({
   },
   sessionMetaText: {
     flexShrink: 1,
-    color: colors.textSecondary,
+    color: colors.textMuted,
     fontSize: typography.metaSize
   },
   tabBar: {
