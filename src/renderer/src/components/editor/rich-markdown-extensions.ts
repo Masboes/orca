@@ -3,7 +3,6 @@ import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import { Code } from '@tiptap/extension-code'
 import Image from '@tiptap/extension-image'
-import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
 import Placeholder from '@tiptap/extension-placeholder'
 import TaskItem from '@tiptap/extension-task-item'
 import { Table } from '@tiptap/extension-table'
@@ -33,6 +32,7 @@ import { createRichMarkdownAnnotationHighlightExtension } from './rich-markdown-
 import type { RichMarkdownEditorCodec } from './rich-markdown-source-transport'
 import { createRichMarkdownHtmlSuperscriptLink } from './rich-markdown-html-superscript-link'
 import type { RichMarkdownHtmlSuperscriptLinkContext } from './rich-markdown-html-superscript-link-context'
+import { RichMarkdownCodeBlockLowlight } from './rich-markdown-lowlight'
 import { RichMarkdownTaskList } from './rich-markdown-task-list'
 
 const lowlight = createLowlight(common)
@@ -73,7 +73,7 @@ export function createRichMarkdownExtensions({
       codeBlock: false
     }),
     RichMarkdownCode,
-    CodeBlockLowlight.extend({
+    RichMarkdownCodeBlockLowlight.extend({
       addNodeView() {
         // Why: RichMarkdownCodeBlock never reads getPos, so it must not re-render
         // just because earlier edits shifted this block's document position.
