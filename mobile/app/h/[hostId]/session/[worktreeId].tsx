@@ -4381,7 +4381,7 @@ export default function SessionScreen() {
               <ChevronLeft size={22} color={colors.textSecondary} strokeWidth={2.2} />
             </Pressable>
 
-            <View style={styles.sessionTitleBlock}>
+            <View style={styles.sessionTitleCentered} pointerEvents="box-none">
               <Text style={styles.sessionTitle} numberOfLines={1}>
                 {worktreeName || 'Terminal'}
               </Text>
@@ -4420,6 +4420,7 @@ export default function SessionScreen() {
                 ) : null}
               </Pressable>
             </View>
+            <View style={styles.sessionTitleSpacer} />
             {!isFloatingWorkspaceRoute && (
               <MobileSessionHeaderIconButton
                 active={activePanel === 'files'}

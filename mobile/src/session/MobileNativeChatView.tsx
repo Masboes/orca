@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
+import { LinearGradient } from 'expo-linear-gradient'
 import { ArrowDown, Square } from 'lucide-react-native'
 import type { AskAnswerSelection, AskPrompt } from '../../../src/shared/native-chat-ask'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
@@ -349,6 +350,15 @@ export function MobileNativeChatView({
               }
             />
           </GestureDetector>
+          {/* Dissolves the transcript into the chrome instead of letting the
+              header shear it off. Opaque at the top edge and clear about a line
+              later, so a message scrolling up fades rather than vanishes. */}
+          <LinearGradient
+            pointerEvents="none"
+            style={styles.topFade}
+            colors={[colors.bgBase, colors.bgBase, 'transparent']}
+            locations={[0, 0.35, 1]}
+          />
           {/* Jump-to-latest control. The scroll-to-top affordance now lives
               per-message (the up-arrow in each agent message's controls). */}
           {!atBottom ? (

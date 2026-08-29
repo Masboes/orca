@@ -34,17 +34,23 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 2
   },
-  // Centred over the bar rather than flexed between the controls: the left has
-  // one button and the right has three, so a flex child would sit off-centre.
-  // Absolute keeps the title optically centred whatever the sides hold.
+  // Centred over the whole bar rather than flexed between the controls: the
+  // left holds one button and the right up to three, so a flex child would sit
+  // visibly off-centre. The inset clears the controls on both sides.
   sessionTitleCentered: {
     position: 'absolute',
-    left: 64,
-    right: 64,
+    left: 0,
+    right: 0,
     top: 0,
     bottom: 0,
+    paddingHorizontal: 132,
     alignItems: 'center',
     justifyContent: 'center'
+  },
+  // Takes the flow width the title used to occupy, keeping the panel icons
+  // pinned right now that the title no longer participates in the row.
+  sessionTitleSpacer: {
+    flex: 1
   },
   backButton: {
     width: 36,
@@ -89,7 +95,8 @@ export const mobileSessionFrameStyles = StyleSheet.create({
   sessionMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 2
+    justifyContent: 'center',
+    marginTop: 1
   },
   sessionMetaText: {
     flexShrink: 1,

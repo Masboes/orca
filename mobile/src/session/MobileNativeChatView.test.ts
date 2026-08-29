@@ -30,6 +30,8 @@ vi.mock('react-native-gesture-handler', () => {
   }
 })
 
+vi.mock('expo-linear-gradient', () => ({ LinearGradient: 'LinearGradient' }))
+
 vi.mock('lucide-react-native', () => ({
   ArrowDown: 'ArrowDown',
   ChevronsDownUp: 'ChevronsDownUp',

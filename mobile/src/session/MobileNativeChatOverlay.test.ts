@@ -5,6 +5,8 @@ import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
 import { MobileNativeChatOverlay } from './MobileNativeChatOverlay'
 import type { MobileNativeChatController } from './use-mobile-native-chat-controller'
 
+vi.mock('expo-linear-gradient', () => ({ LinearGradient: 'LinearGradient' }))
+
 vi.mock('react-native', () => ({
   StyleSheet: { create: (styles: unknown) => styles, absoluteFillObject: {} },
   View: 'View'

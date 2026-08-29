@@ -46,6 +46,15 @@ export const styles = StyleSheet.create({
     flex: 1,
     position: 'relative'
   },
+  // ~1.5 lines of body text: enough for the dissolve to read as a transition
+  // rather than a hard edge, short enough not to eat a whole line of prose.
+  topFade: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 30
+  },
   listContent: {
     paddingVertical: spacing.sm,
     flexGrow: 1
