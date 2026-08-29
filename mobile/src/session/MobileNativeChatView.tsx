@@ -225,17 +225,26 @@ export function MobileNativeChatView({
     [onSend, onClearSendError]
   )
 
+  // Why its own handler: onScroll alone leaves this stale. Android does not
+  // reliably emit a final onScroll at the resting offset after a momentum
+  // flick, so the last reading is taken mid-scroll and the jump-to-bottom
+  // affordance stays up while the user is already at the bottom. The settle
+  // events below re-run it once the position is final.
+  const syncAtBottom = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent
+    const distanceFromBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height)
+    setAtBottom(distanceFromBottom < 80)
+  }, [])
+
   const onScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-      const { contentOffset, contentSize, layoutMeasurement } = e.nativeEvent
-      const distanceFromBottom = contentSize.height - (contentOffset.y + layoutMeasurement.height)
-      setAtBottom(distanceFromBottom < 80)
+      syncAtBottom(e)
       // Near the top — page in older history.
-      if (contentOffset.y < 60 && hasMore && !loadingEarlier) {
+      if (e.nativeEvent.contentOffset.y < 60 && hasMore && !loadingEarlier) {
         onLoadEarlier?.()
       }
     },
-    [hasMore, loadingEarlier, onLoadEarlier]
+    [hasMore, loadingEarlier, onLoadEarlier, syncAtBottom]
   )
 
   // Align a single message's top to the top of the viewport.
@@ -292,6 +301,8 @@ export function MobileNativeChatView({
               // instead of being swallowed by the dismiss gesture.
               keyboardShouldPersistTaps="handled"
               onScroll={onScroll}
+              onMomentumScrollEnd={syncAtBottom}
+              onScrollEndDrag={syncAtBottom}
               scrollEventThrottle={32}
               onContentSizeChange={() => {
                 if (data.length > 0 && atBottom) {

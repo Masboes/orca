@@ -247,9 +247,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: radii.button,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: colors.borderSubtle,
-    backgroundColor: colors.bgRaised
+    // Unfilled: it sits in the composer action row beside flat icon buttons, so
+    // a filled slab reads as a heavier control than the thing it selects.
+    backgroundColor: 'transparent'
   },
   pillText: {
     color: colors.textSecondary,

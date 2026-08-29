@@ -21,8 +21,10 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     minWidth: 0
   },
   sessionChrome: {
-    backgroundColor: colors.bgPanel,
-    borderBottomWidth: 1,
+    // Same ground as the page: a distinct panel tone made the header read as a
+    // slab of chrome rather than the top of the content.
+    backgroundColor: colors.bgBase,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.borderSubtle
   },
   sessionTopBar: {
