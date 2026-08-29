@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
-import { ArrowDown, ChevronsDownUp, ChevronsUpDown, Square } from 'lucide-react-native'
+import { ArrowDown, Square } from 'lucide-react-native'
 import type { AskAnswerSelection, AskPrompt } from '../../../src/shared/native-chat-ask'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
 import { colors } from '../theme/mobile-theme'
@@ -387,25 +387,15 @@ export function MobileNativeChatView({
           onAnswer={async (text) => (await onAnswerQuestion?.(text)) ?? false}
         />
       ) : null}
-      {/* Chrome row above the composer: the working indicator and the global
-          tool-calls expand/collapse toggle on the left, Stop in the far corner. */}
-      <View style={styles.chromeRow}>
-        <View style={styles.chromeLeft}>
-          {agentWorking ? <MobileAgentWorkingIndicator /> : null}
-          <Pressable
-            style={({ pressed }) => [styles.chromeToggle, pressed && styles.pressed]}
-            onPress={() => setToolsExpanded((v) => !v)}
-            hitSlop={8}
-          >
-            {toolsExpanded ? (
-              <ChevronsDownUp size={14} color={colors.textMuted} strokeWidth={2} />
-            ) : (
-              <ChevronsUpDown size={14} color={colors.textMuted} strokeWidth={2} />
-            )}
-            <Text style={styles.chromeToggleLabel}>{toolsExpanded ? 'Collapse' : 'Tools'}</Text>
-          </Pressable>
-        </View>
-        {agentWorking ? (
+      {/* Chrome row above the composer: working indicator on the left, Stop in
+          the far corner. Only while the agent runs — at rest it would be an
+          empty bar, and the tools toggle it used to hold now lives in the
+          composer's action row. */}
+      {agentWorking ? (
+        <View style={styles.chromeRow}>
+          <View style={styles.chromeLeft}>
+            <MobileAgentWorkingIndicator />
+          </View>
           <Pressable
             style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
             onPress={onStop}
@@ -415,8 +405,8 @@ export function MobileNativeChatView({
             <Square size={13} color={colors.statusRed} strokeWidth={2.4} fill={colors.statusRed} />
             <Text style={styles.stopLabel}>Stop</Text>
           </Pressable>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
       {sendErrorMessage ? (
         // This banner is the only channel for a send failure — announce it.
         <View
@@ -442,6 +432,8 @@ export function MobileNativeChatView({
         dictationMode={dictationMode}
         onMicPressIn={onMicPressIn}
         onMicPressOut={onMicPressOut}
+        toolsExpanded={toolsExpanded}
+        onToggleTools={() => setToolsExpanded((v) => !v)}
         disabled={lockReason !== null}
         placeholder={
           lockReason === 'disconnected'

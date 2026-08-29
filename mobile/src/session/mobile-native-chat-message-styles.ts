@@ -18,16 +18,16 @@ export const styles = StyleSheet.create({
   },
   userBubble: {
     maxWidth: '88%',
-    backgroundColor: colors.textPrimary,
+    backgroundColor: colors.bubbleUser,
     borderRadius: radii.card,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm
   },
   userText: {
-    color: colors.bgBase,
+    color: colors.textSecondary,
     fontSize: TEXT_SIZE,
     lineHeight: TEXT_SIZE + 6,
-    fontWeight: '500'
+    fontWeight: '400'
   },
   controls: {
     flexDirection: 'row',

@@ -16,6 +16,10 @@ export const darkColors = {
   // composites over both bgBase and bgPanel.
   surfaceTranslucent: 'rgba(255,255,255,0.05)',
 
+  // Sent-message fill. Quiet on purpose — your own message is not the thing you
+  // came back to read, so it recedes and lets the reply hold the page.
+  bubbleUser: 'rgba(255,255,255,0.08)',
+
   textPrimary: '#e0e0e0',
   textSecondary: '#a1a1a1',
   textMuted: '#8c8c8c',
@@ -67,13 +71,16 @@ export type ThemeName = 'light' | 'dark'
 // and syntax hues darken rather than carry over — the dark tints are picked for
 // #111111 and wash out on white. Syntax follows VS Code Light+.
 export const lightColors: ThemeColors = {
-  bgBase: '#ffffff',
-  bgPanel: '#f7f7f7',
-  bgRaised: '#ededed',
-  borderSubtle: '#d8d8d8',
-  editorSurface: '#fbfbfb',
+  // Warm off-white rather than pure white: a paper tone is easier to read for
+  // long stretches and keeps the greys from going blue.
+  bgBase: '#faf9f5',
+  bgPanel: '#f5f4ee',
+  bgRaised: '#ebe9e1',
+  borderSubtle: '#e0ded4',
+  editorSurface: '#fdfcfa',
 
-  surfaceTranslucent: 'rgba(0,0,0,0.05)',
+  surfaceTranslucent: 'rgba(0,0,0,0.04)',
+  bubbleUser: '#efede5',
 
   textPrimary: '#1a1a1a',
   textSecondary: '#4a4a4a',

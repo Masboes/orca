@@ -8,7 +8,15 @@ import {
   TextInput,
   View
 } from 'react-native'
-import { ArrowUp, ImagePlus, Mic, Square, X } from 'lucide-react-native'
+import {
+  ArrowUp,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  ImagePlus,
+  Mic,
+  Square,
+  X
+} from 'lucide-react-native'
 import { colors, radii, spacing, typography } from '../theme/mobile-theme'
 import { getVerifiedNativeChatCommands } from '../../../src/shared/native-chat-agent-profiles'
 import {
@@ -57,6 +65,10 @@ type Props = {
   placeholder?: string
   filePaths?: string[]
   onNeedFiles?: (query: string) => void
+  /** Global tool-call expand/collapse. Lives here rather than on its own row so
+   *  an idle session spends no vertical space on it. */
+  toolsExpanded?: boolean
+  onToggleTools?: () => void
 }
 
 export function MobileNativeChatComposer({
@@ -77,7 +89,9 @@ export function MobileNativeChatComposer({
   disabled = false,
   placeholder = 'Message, @files, /commands',
   filePaths = NO_FILE_PATHS,
-  onNeedFiles
+  onNeedFiles,
+  toolsExpanded = false,
+  onToggleTools
 }: Props): React.JSX.Element {
   const [cursor, setCursor] = useState(0)
   // Transiently drives the native caret after a mid-text autocomplete insert,
@@ -230,6 +244,20 @@ export function MobileNativeChatComposer({
                   <ActivityIndicator size="small" color={colors.textSecondary} />
                 ) : (
                   <ImagePlus size={20} color={colors.textSecondary} strokeWidth={2} />
+                )}
+              </Pressable>
+            ) : null}
+            {onToggleTools ? (
+              <Pressable
+                accessibilityLabel={toolsExpanded ? 'Collapse tool calls' : 'Expand tool calls'}
+                style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
+                onPress={onToggleTools}
+                hitSlop={8}
+              >
+                {toolsExpanded ? (
+                  <ChevronsDownUp size={20} color={colors.textSecondary} strokeWidth={2} />
+                ) : (
+                  <ChevronsUpDown size={20} color={colors.textSecondary} strokeWidth={2} />
                 )}
               </Pressable>
             ) : null}
