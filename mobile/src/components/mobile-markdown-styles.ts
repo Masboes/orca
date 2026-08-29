@@ -6,14 +6,15 @@ export const styles = StyleSheet.create({
     gap: spacing.sm
   },
   paragraph: {
+    fontFamily: typography.serifFamily,
     fontSize: 13,
     lineHeight: 19,
     color: colors.textPrimary
   },
   heading: {
+    fontFamily: typography.serifBoldFamily,
     fontSize: 14,
     lineHeight: 20,
-    fontWeight: '700',
     color: colors.textPrimary
   },
   headingLarge: {
@@ -21,11 +22,11 @@ export const styles = StyleSheet.create({
     lineHeight: 21
   },
   bold: {
-    fontWeight: '700',
+    fontFamily: typography.serifBoldFamily,
     color: colors.textPrimary
   },
   italic: {
-    fontStyle: 'italic'
+    fontFamily: typography.serifItalicFamily
   },
   strike: {
     textDecorationLine: 'line-through'
@@ -52,6 +53,7 @@ export const styles = StyleSheet.create({
     paddingLeft: spacing.sm
   },
   quoteText: {
+    fontFamily: typography.serifFamily,
     fontSize: 13,
     lineHeight: 19,
     color: colors.textSecondary
@@ -137,6 +139,7 @@ export const styles = StyleSheet.create({
     fontFamily: typography.monoFamily
   },
   listText: {
+    fontFamily: typography.serifFamily,
     flex: 1,
     minWidth: 0,
     fontSize: 13,

@@ -24,10 +24,10 @@ export const styles = StyleSheet.create({
     paddingVertical: spacing.sm
   },
   userText: {
+    fontFamily: typography.serifFamily,
     color: colors.textSecondary,
     fontSize: TEXT_SIZE,
-    lineHeight: TEXT_SIZE + 6,
-    fontWeight: '400'
+    lineHeight: TEXT_SIZE + 6
   },
   controls: {
     flexDirection: 'row',

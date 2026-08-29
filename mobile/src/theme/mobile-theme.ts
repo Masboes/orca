@@ -184,5 +184,12 @@ export const typography = {
   titleSize: 18,
   bodySize: 14,
   metaSize: 12,
-  monoFamily: 'monospace' as const
+  monoFamily: 'monospace' as const,
+  // Agent prose only. UI chrome stays on the system sans — mixing a serif into
+  // buttons and tabs reads as costume rather than design. Registered in
+  // app/_layout.tsx; these names must match the useFonts keys.
+  serifFamily: 'SourceSerif4_400Regular' as const,
+  serifItalicFamily: 'SourceSerif4_400Regular_Italic' as const,
+  serifSemiBoldFamily: 'SourceSerif4_600SemiBold' as const,
+  serifBoldFamily: 'SourceSerif4_700Bold' as const
 } as const

@@ -3,6 +3,12 @@ import { View, StyleSheet } from 'react-native'
 import { Stack, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import * as SplashScreen from 'expo-splash-screen'
+import * as SystemUI from 'expo-system-ui'
+import { useFonts } from 'expo-font'
+import { SourceSerif4_400Regular } from '@expo-google-fonts/source-serif-4/400Regular'
+import { SourceSerif4_400Regular_Italic } from '@expo-google-fonts/source-serif-4/400Regular_Italic'
+import { SourceSerif4_600SemiBold } from '@expo-google-fonts/source-serif-4/600SemiBold'
+import { SourceSerif4_700Bold } from '@expo-google-fonts/source-serif-4/700Bold'
 import * as Notifications from 'expo-notifications'
 import * as Linking from 'expo-linking'
 import { colors, statusBarStyle } from '../src/theme/mobile-theme'
@@ -18,6 +24,11 @@ import { recoverMobileRelayPairing } from '../src/transport/mobile-relay-pairing
 // and ready to render. Without this the user sees a blank white/black frame
 // between the native splash and the first React paint.
 SplashScreen.preventAutoHideAsync()
+
+// The Android window background defaults to the splash colour, which shows
+// through as a near-black flash whenever a pane relayouts (rotation, fold).
+// Paint it with the active theme's page colour instead.
+void SystemUI.setBackgroundColorAsync(colors.bgBase)
 
 // Why: without this, expo-notifications silently drops notifications when
 // the app is in the foreground. Setting all three to true makes iOS/Android
@@ -153,9 +164,20 @@ export default function RootLayout() {
   // out — this is the earliest moment the user will see actual app content.
   // Previously the splash hid when a placeholder View rendered, leaving a
   // grey gap before the real screen appeared.
+  // Hold the splash until the serif is resolved, so prose does not paint in the
+  // fallback face and reflow a frame later.
+  const [fontsLoaded] = useFonts({
+    SourceSerif4_400Regular,
+    SourceSerif4_400Regular_Italic,
+    SourceSerif4_600SemiBold,
+    SourceSerif4_700Bold
+  })
+
   const onNavigatorLayout = useCallback(async () => {
-    await SplashScreen.hideAsync()
-  }, [])
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync()
+    }
+  }, [fontsLoaded])
 
   return (
     <RpcClientProvider>
