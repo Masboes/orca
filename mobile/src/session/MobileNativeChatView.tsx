@@ -10,7 +10,6 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
-import { LinearGradient } from 'expo-linear-gradient'
 import { ArrowDown } from 'lucide-react-native'
 import type { AskAnswerSelection, AskPrompt } from '../../../src/shared/native-chat-ask'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
@@ -170,6 +169,12 @@ export function MobileNativeChatView({
   const [dockHeight, setDockHeight] = useState(0)
   const sendScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { fontScale, pinchGesture } = useMobileNativeChatPinchGesture()
+  // Memoised: a new array each render would churn the list's identity and
+  // retrigger the autoscroll on every frame.
+  const listContentStyle = useMemo(
+    () => [styles.listContent, { paddingBottom: dockHeight + bottomPad + spacing.sm }],
+    [dockHeight, bottomPad]
+  )
   useEffect(
     () => () => {
       if (sendScrollTimerRef.current) {
@@ -300,10 +305,7 @@ export function MobileNativeChatView({
               data={data}
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
-              contentContainerStyle={[
-                styles.listContent,
-                { paddingBottom: dockHeight + bottomPad + spacing.sm }
-              ]}
+              contentContainerStyle={listContentStyle}
               // Let link/file taps land while the composer keyboard is up
               // instead of being swallowed by the dismiss gesture.
               keyboardShouldPersistTaps="handled"
@@ -373,14 +375,6 @@ export function MobileNativeChatView({
         style={[styles.dock, { bottom: bottomPad }]}
         onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
       >
-        {/* Mirror of the header ramp: prose dissolves into the composer rather
-            than being clipped by its top edge. Ends on the page colour at zero
-            alpha — 'transparent' is rgba(0,0,0,0) and would drag it to black. */}
-        <LinearGradient
-          pointerEvents="none"
-          style={styles.dockFade}
-          colors={[colors.bgBaseFade, colors.bgBase]}
-        />
       {/* Pending agent prompt: a structured AskUserQuestion wins, then a
           heuristic permission, then a heuristic question. The controller owns
           dismissal (it must survive this subtree unmounting on a view toggle);

@@ -51,15 +51,10 @@ export const styles = StyleSheet.create({
   dock: {
     position: 'absolute',
     left: 0,
-    right: 0
-  },
-  // Sits above the dock's own content, hence the negative offset.
-  dockFade: {
-    position: 'absolute',
-    left: 0,
     right: 0,
-    top: -36,
-    height: 36
+    // Opaque: prose passing underneath is clipped by this edge, which is what
+    // leaves half a glyph showing as a line goes under.
+    backgroundColor: colors.bgBase
   },
   listContent: {
     paddingVertical: spacing.sm,
