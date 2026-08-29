@@ -192,6 +192,28 @@ export function MobileNativeChatView({
     [messages, folded, streaming, pending, imagePreviewsByMessageId]
   )
 
+  // Rows measure lazily and the list has no getItemLayout, so offsets for
+  // unrendered rows are estimates — and a collapsed tool-call row estimates
+  // especially badly against its real height. Content size therefore keeps
+  // settling for several frames after a thread opens, and a single corrective
+  // scroll lands short. Nudge across that window instead, and stand down the
+  // moment the reader takes over.
+  useEffect(() => {
+    if (data.length === 0 || readerHasScrolledRef.current) {
+      return
+    }
+    let ticks = 0
+    const id = setInterval(() => {
+      if (readerHasScrolledRef.current || ticks >= 6) {
+        clearInterval(id)
+        return
+      }
+      ticks += 1
+      listRef.current?.scrollToEnd({ animated: false })
+    }, 120)
+    return () => clearInterval(id)
+  }, [data.length])
+
   // Follow the tail as the conversation grows and keep the newest message above
   // the keyboard when it opens — but only when already pinned to the bottom, so
   // we don't yank the user away while they read history. (Also fires on keyboard
