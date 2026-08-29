@@ -34,8 +34,9 @@ import type { RichMarkdownEditorCodec } from './rich-markdown-source-transport'
 import { createRichMarkdownHtmlSuperscriptLink } from './rich-markdown-html-superscript-link'
 import type { RichMarkdownHtmlSuperscriptLinkContext } from './rich-markdown-html-superscript-link-context'
 import { RichMarkdownTaskList } from './rich-markdown-task-list'
+import { createCachedLowlight } from './rich-markdown-lowlight-cache'
 
-const lowlight = createLowlight(common)
+const lowlight = createCachedLowlight(createLowlight(common))
 
 const RichMarkdownLink = Link.extend({
   // Why: link's priority must stay below code's default 100 so Markdown
