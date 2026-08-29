@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { View, StyleSheet } from 'react-native'
 import { Stack, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -166,18 +166,24 @@ export default function RootLayout() {
   // grey gap before the real screen appeared.
   // Hold the splash until the serif is resolved, so prose does not paint in the
   // fallback face and reflow a frame later.
-  const [fontsLoaded] = useFonts({
+  const [navigatorReady, setNavigatorReady] = useState(false)
+  const [fontsLoaded, fontError] = useFonts({
     Lora_400Regular,
     Lora_400Regular_Italic,
     Lora_600SemiBold,
     Lora_700Bold
   })
 
-  const onNavigatorLayout = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync()
+  const onNavigatorLayout = useCallback(() => setNavigatorReady(true), [])
+
+  // Why an effect and not the layout callback: onLayout fires once, so if the
+  // face resolves after it the splash would never be dismissed. A font failure
+  // must dismiss it too — a missing serif is worth shipping over a dead launch.
+  useEffect(() => {
+    if (navigatorReady && (fontsLoaded || fontError)) {
+      void SplashScreen.hideAsync()
     }
-  }, [fontsLoaded])
+  }, [navigatorReady, fontsLoaded, fontError])
 
   return (
     <RpcClientProvider>

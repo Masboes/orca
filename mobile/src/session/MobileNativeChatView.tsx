@@ -13,7 +13,7 @@ import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-ha
 import { ArrowDown } from 'lucide-react-native'
 import type { AskAnswerSelection, AskPrompt } from '../../../src/shared/native-chat-ask'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
-import { colors } from '../theme/mobile-theme'
+import { colors, spacing } from '../theme/mobile-theme'
 import { styles } from './mobile-native-chat-view-styles'
 import {
   buildMobileNativeChatTransientData,
@@ -378,7 +378,7 @@ export function MobileNativeChatView({
           {!atBottom ? (
             <Pressable
               accessibilityLabel="Scroll to latest"
-              style={[styles.fab, styles.fabBottom]}
+              style={[styles.fab, { bottom: dockHeight + bottomPad + spacing.md }]}
               onPress={() => listRef.current?.scrollToEnd({ animated: true })}
             >
               <ArrowDown size={18} color={colors.textPrimary} strokeWidth={2.2} />
@@ -390,82 +390,82 @@ export function MobileNativeChatView({
         style={[styles.dock, { bottom: bottomPad }]}
         onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
       >
-      {/* Pending agent prompt: a structured AskUserQuestion wins, then a
+        {/* Pending agent prompt: a structured AskUserQuestion wins, then a
           heuristic permission, then a heuristic question. The controller owns
           dismissal (it must survive this subtree unmounting on a view toggle);
           `ask` arrives already nulled while dismissed. */}
-      {ask ? (
-        <MobileNativeChatAsk
-          key={askKey ?? 'ask'}
-          prompt={ask}
-          onAnswer={async (selections) => {
-            const accepted = (await onAnswerAsk?.(ask, selections)) ?? false
-            if (accepted) {
-              onDismissAsk?.()
-            }
-            return accepted
-          }}
-          onCancel={async () => {
-            const accepted = (await onCancelAsk?.()) ?? false
-            if (accepted) {
-              onDismissAsk?.()
-            }
-            return accepted
-          }}
+        {ask ? (
+          <MobileNativeChatAsk
+            key={askKey ?? 'ask'}
+            prompt={ask}
+            onAnswer={async (selections) => {
+              const accepted = (await onAnswerAsk?.(ask, selections)) ?? false
+              if (accepted) {
+                onDismissAsk?.()
+              }
+              return accepted
+            }}
+            onCancel={async () => {
+              const accepted = (await onCancelAsk?.()) ?? false
+              if (accepted) {
+                onDismissAsk?.()
+              }
+              return accepted
+            }}
+          />
+        ) : permission ? (
+          <MobileNativeChatPermission
+            key={JSON.stringify(permission)}
+            permission={permission}
+            onRespond={async (send) => (await onRespondPermission?.(send)) ?? false}
+          />
+        ) : question ? (
+          <MobileNativeChatQuestion
+            key={mobileChatQuestionKey(question)}
+            question={question}
+            onAnswer={async (text) => (await onAnswerQuestion?.(text)) ?? false}
+          />
+        ) : null}
+        {sendErrorMessage ? (
+          // This banner is the only channel for a send failure — announce it.
+          <View
+            style={styles.sendError}
+            accessibilityRole="alert"
+            accessibilityLiveRegion="assertive"
+          >
+            <Text style={styles.sendErrorText}>{sendErrorMessage}</Text>
+          </View>
+        ) : null}
+        <MobileNativeChatComposer
+          value={composerText}
+          onChangeText={onComposerTextChange}
+          onSend={handleSend}
+          agent={agent}
+          sessionOptions={sessionOptions}
+          onAttachImage={onAttachImage}
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          isAttaching={isAttaching}
+          onMicPress={onMicPress}
+          micActive={micActive}
+          dictationMode={dictationMode}
+          onMicPressIn={onMicPressIn}
+          onMicPressOut={onMicPressOut}
+          toolsExpanded={toolsExpanded}
+          onToggleTools={() => setToolsExpanded((v) => !v)}
+          agentWorking={agentWorking}
+          onStop={onStop}
+          disabled={lockReason !== null}
+          placeholder={
+            lockReason === 'disconnected'
+              ? 'Reconnecting…'
+              : lockReason === 'waiting'
+                ? 'Waiting for terminal…'
+                : 'Message, @files, /commands'
+          }
+          filePaths={filePaths}
+          onNeedFiles={onNeedFiles}
         />
-      ) : permission ? (
-        <MobileNativeChatPermission
-          key={JSON.stringify(permission)}
-          permission={permission}
-          onRespond={async (send) => (await onRespondPermission?.(send)) ?? false}
-        />
-      ) : question ? (
-        <MobileNativeChatQuestion
-          key={mobileChatQuestionKey(question)}
-          question={question}
-          onAnswer={async (text) => (await onAnswerQuestion?.(text)) ?? false}
-        />
-      ) : null}
-      {sendErrorMessage ? (
-        // This banner is the only channel for a send failure — announce it.
-        <View
-          style={styles.sendError}
-          accessibilityRole="alert"
-          accessibilityLiveRegion="assertive"
-        >
-          <Text style={styles.sendErrorText}>{sendErrorMessage}</Text>
-        </View>
-      ) : null}
-      <MobileNativeChatComposer
-        value={composerText}
-        onChangeText={onComposerTextChange}
-        onSend={handleSend}
-        agent={agent}
-        sessionOptions={sessionOptions}
-        onAttachImage={onAttachImage}
-        attachments={attachments}
-        onRemoveAttachment={onRemoveAttachment}
-        isAttaching={isAttaching}
-        onMicPress={onMicPress}
-        micActive={micActive}
-        dictationMode={dictationMode}
-        onMicPressIn={onMicPressIn}
-        onMicPressOut={onMicPressOut}
-        toolsExpanded={toolsExpanded}
-        onToggleTools={() => setToolsExpanded((v) => !v)}
-        agentWorking={agentWorking}
-        onStop={onStop}
-        disabled={lockReason !== null}
-        placeholder={
-          lockReason === 'disconnected'
-            ? 'Reconnecting…'
-            : lockReason === 'waiting'
-              ? 'Waiting for terminal…'
-              : 'Message, @files, /commands'
-        }
-        filePaths={filePaths}
-        onNeedFiles={onNeedFiles}
-      />
       </View>
     </View>
   )

@@ -61,7 +61,10 @@ function HostStack({ animation }: { animation: 'none' | 'default' }) {
 export default function HostGroupLayout() {
   // Wide layout = tablet/foldable canvas (see responsive-layout-metrics).
   const { isWideLayout, isLandscape, width: windowWidth } = useResponsiveLayout()
-  const { hostId, action } = useGlobalSearchParams<{ hostId?: string; action?: string }>()
+  const { hostId, action } = useGlobalSearchParams<{
+    hostId?: string
+    action?: string
+  }>()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarWidth, setSidebarWidth] = useState(HOST_SIDEBAR_DEFAULT_WIDTH)
@@ -183,12 +186,7 @@ export default function HostGroupLayout() {
               accessibilityLabel="Close the sidebar"
             />
             <View style={[styles.sidebarOverlay, { width: sidebarWidth }]}>
-              <HostScreen
-                embedded
-                hostId={hostId}
-                action={action}
-                onHideSidebar={hideSidebar}
-              />
+              <HostScreen embedded hostId={hostId} action={action} onHideSidebar={hideSidebar} />
               <View style={styles.resizeHandle} {...resizer.panHandlers} />
             </View>
           </>
