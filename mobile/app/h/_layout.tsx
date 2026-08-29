@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { View, StyleSheet, PanResponder } from 'react-native'
+import { View, StyleSheet, PanResponder, Pressable } from 'react-native'
 import { Stack, useGlobalSearchParams, usePathname } from 'expo-router'
 import { colors } from '../../src/theme/mobile-theme'
 import { useResponsiveLayout } from '../../src/layout/responsive-layout'
@@ -60,7 +60,7 @@ function HostStack({ animation }: { animation: 'none' | 'default' }) {
 
 export default function HostGroupLayout() {
   // Wide layout = tablet/foldable canvas (see responsive-layout-metrics).
-  const { isWideLayout, width: windowWidth } = useResponsiveLayout()
+  const { isWideLayout, isLandscape, width: windowWidth } = useResponsiveLayout()
   const { hostId, action } = useGlobalSearchParams<{ hostId?: string; action?: string }>()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -96,16 +96,32 @@ export default function HostGroupLayout() {
   const hideSidebar = useCallback(() => setSidebarOpen(false), [])
   const showSidebar = isWideLayout && !!hostId
   const detailHasContent = !!hostId && pathname !== `/h/${hostId}`
-  const canCollapseSidebar = showSidebar && detailHasContent
+  // Portrait on a tablet canvas is wide enough to host the sidebar but too
+  // narrow to give it a permanent column, so it floats over the detail instead.
+  const overlaySidebar = showSidebar && !isLandscape
+  const canCollapseSidebar = showSidebar && (overlaySidebar || detailHasContent)
 
-  // Why: there is no reveal button — navigating Back to the base host route brings
-  // the sidebar back (and that route's detail pane is only a placeholder, so a
-  // hidden sidebar would leave nothing useful).
+  // Rotation sets the sidebar: open in landscape, closed in portrait. Keyed on
+  // the transition, not the value, so a manual toggle survives until the next
+  // rotation rather than being immediately overridden.
+  const wasLandscapeRef = useRef(isLandscape)
   useEffect(() => {
-    if (showSidebar && !detailHasContent) {
+    if (wasLandscapeRef.current === isLandscape) {
+      return
+    }
+    wasLandscapeRef.current = isLandscape
+    setSidebarOpen(isLandscape)
+  }, [isLandscape])
+
+  // Why: docked mode has no reveal button — navigating Back to the base host
+  // route brings the sidebar back (and that route's detail pane is only a
+  // placeholder, so a hidden sidebar would leave nothing useful). The overlay
+  // is dismissible by design, so it is exempt.
+  useEffect(() => {
+    if (showSidebar && !overlaySidebar && !detailHasContent) {
       setSidebarOpen(true)
     }
-  }, [detailHasContent, showSidebar])
+  }, [detailHasContent, overlaySidebar, showSidebar])
 
   // Why: the resizer lives on a dedicated edge handle (a leaf overlay at the
   // sidebar's right border), NOT on the sidebar container. On Android a child
@@ -141,7 +157,7 @@ export default function HostGroupLayout() {
   return (
     <HostProtocolGate hostId={hostId}>
       <View style={styles.row}>
-        {showSidebar && sidebarOpen ? (
+        {showSidebar && sidebarOpen && !overlaySidebar ? (
           <View style={[styles.sidebar, { width: sidebarWidth }]}>
             <HostScreen
               embedded
@@ -154,8 +170,26 @@ export default function HostGroupLayout() {
           </View>
         ) : null}
         <View style={styles.detail}>
-          <HostStack animation={showSidebar ? 'none' : 'default'} />
+          <HostStack animation={showSidebar && !overlaySidebar ? 'none' : 'default'} />
         </View>
+        {showSidebar && sidebarOpen && overlaySidebar ? (
+          <>
+            <Pressable
+              style={styles.backdrop}
+              onPress={hideSidebar}
+              accessibilityLabel="Close the sidebar"
+            />
+            <View style={[styles.sidebarOverlay, { width: sidebarWidth }]}>
+              <HostScreen
+                embedded
+                hostId={hostId}
+                action={action}
+                onHideSidebar={hideSidebar}
+              />
+              <View style={styles.resizeHandle} {...resizer.panHandlers} />
+            </View>
+          </>
+        ) : null}
       </View>
     </HostProtocolGate>
   )
@@ -185,5 +219,28 @@ const styles = StyleSheet.create({
   detail: {
     flex: 1,
     minWidth: 0
+  },
+  // Portrait overlay: the sidebar floats over the detail pane instead of
+  // taking a column from it, dismissed by tapping the scrim.
+  backdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    zIndex: 30,
+    elevation: 30
+  },
+  sidebarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    bottom: 0,
+    backgroundColor: colors.bgBase,
+    borderRightWidth: 1,
+    borderRightColor: colors.borderSubtle,
+    zIndex: 31,
+    elevation: 31
   }
 })
