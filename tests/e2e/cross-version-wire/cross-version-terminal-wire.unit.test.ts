@@ -14,6 +14,8 @@ import {
 
 // Why: a cold CI run extracts the baseline checkout before the first journey.
 const SUITE_TIMEOUT_MS = 180_000
+// Last stable release before SnapshotStart began publishing terminal mode metadata.
+const TERMINAL_MODE_METADATA_LEGACY_REF = 'v1.4.190'
 
 /**
  * The frames one journey must produce, named rather than numbered so a diff reads
@@ -42,11 +44,18 @@ const EXPECTED_JOURNEY_FRAMES = [
 let baselineRef: string
 let current: TerminalWireBuild
 let baseline: TerminalWireBuild
+let legacyTerminalModeMetadata: TerminalWireBuild
 
 beforeAll(async () => {
   baselineRef = resolveBaselineReleaseRef()
-  current = await loadTerminalWireBuild(WORKING_TREE)
-  baseline = await loadTerminalWireBuild(baselineRef)
+  const [workingTree, baselineRelease, legacyRelease] = await Promise.all([
+    loadTerminalWireBuild(WORKING_TREE),
+    loadTerminalWireBuild(baselineRef),
+    loadTerminalWireBuild(TERMINAL_MODE_METADATA_LEGACY_REF)
+  ])
+  current = workingTree
+  baseline = baselineRelease
+  legacyTerminalModeMetadata = legacyRelease
 }, SUITE_TIMEOUT_MS)
 
 afterEach(() => {
@@ -150,6 +159,26 @@ describe('cross-version remote terminal wire', () => {
     async () => {
       const record = await runTerminalSkewJourney({ hostBuild: baseline, clientBuild: current })
       expect(record.hostRevision).toBe(baseline.revision)
+      expectJourneyActuallyRan(record)
+      expectWireCompatible(record)
+      for (const start of record.snapshotStarts) {
+        expect('terminalOwner' in start).toBe('alternateScreen' in start)
+        if ('terminalOwner' in start) {
+          expect(start).toMatchObject({ alternateScreen: false, terminalOwner: 'shell' })
+        }
+      }
+    },
+    SUITE_TIMEOUT_MS
+  )
+
+  it(
+    'new client handles a release without terminal mode metadata',
+    async () => {
+      const record = await runTerminalSkewJourney({
+        hostBuild: legacyTerminalModeMetadata,
+        clientBuild: current
+      })
+      expect(record.hostLabel).toBe(TERMINAL_MODE_METADATA_LEGACY_REF)
       expectJourneyActuallyRan(record)
       expectWireCompatible(record)
       for (const start of record.snapshotStarts) {
