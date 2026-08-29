@@ -26,11 +26,11 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     borderBottomColor: colors.borderSubtle
   },
   sessionTopBar: {
-    minHeight: 44,
+    minHeight: 38,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs
+    paddingVertical: 2
   },
   backButton: {
     width: 36,
@@ -85,7 +85,7 @@ export const mobileSessionFrameStyles = StyleSheet.create({
   },
   tabScroll: {
     flex: 1,
-    maxHeight: 36
+    maxHeight: 30
   },
   tabContent: {
     paddingLeft: spacing.sm,
@@ -94,11 +94,11 @@ export const mobileSessionFrameStyles = StyleSheet.create({
   tab: {
     width: 128,
     maxWidth: 128,
-    minHeight: 36,
+    minHeight: 30,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent'
   },

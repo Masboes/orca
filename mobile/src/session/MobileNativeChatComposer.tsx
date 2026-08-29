@@ -355,13 +355,13 @@ const styles = StyleSheet.create({
   },
   composerInset: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.sm
   },
   bar: {
     gap: spacing.xs,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderSubtle,
     borderRadius: radii.card,
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   actionRow: {
-    minHeight: 40,
+    minHeight: 36,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     maxHeight: 140,
-    minHeight: 40,
+    minHeight: 36,
     color: colors.textPrimary,
     fontSize: typography.bodySize + 1,
     backgroundColor: colors.bgRaised,
@@ -390,15 +390,15 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm
   },
   iconButton: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     alignItems: 'center',
     justifyContent: 'center'
   },
   sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     // White send affordance per design — dark arrow on a light circle.

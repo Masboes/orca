@@ -100,8 +100,8 @@ describe('MobileNativeChatComposer', () => {
     expect(composer.children[1]).toBe(actions)
     expect(inset.props.style).toMatchObject({
       paddingHorizontal: spacing.md,
-      paddingTop: spacing.sm,
-      paddingBottom: spacing.md
+      paddingTop: spacing.xs,
+      paddingBottom: spacing.sm
     })
     expect(composer.props.style).toMatchObject({
       borderWidth: 1,

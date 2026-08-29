@@ -170,7 +170,10 @@ export default function HostGroupLayout() {
           </View>
         ) : null}
         <View style={styles.detail}>
-          <HostStack animation={showSidebar && !overlaySidebar ? 'none' : 'default'} />
+          {/* Keyed on showSidebar alone: rotation must not change this, or the
+              native stack reconfigures mid-rotation and the detail pane blanks
+              for a frame. The overlay floats, so this stays a split view. */}
+          <HostStack animation={showSidebar ? 'none' : 'default'} />
         </View>
         {showSidebar && sidebarOpen && overlaySidebar ? (
           <>
@@ -218,7 +221,8 @@ const styles = StyleSheet.create({
   },
   detail: {
     flex: 1,
-    minWidth: 0
+    minWidth: 0,
+    backgroundColor: colors.bgBase
   },
   // Portrait overlay: the sidebar floats over the detail pane instead of
   // taking a column from it, dismissed by tapping the scrim.
