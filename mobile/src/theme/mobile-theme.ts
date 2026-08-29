@@ -20,6 +20,11 @@ export const darkColors = {
   // came back to read, so it recedes and lets the reply hold the page.
   bubbleUser: 'rgba(255,255,255,0.08)',
 
+  // Surfaces that sit above the page and hold input: the composer, cards.
+  // Elevation moves toward the light in both themes, so a raised surface reads
+  // as nearer rather than as a darker well cut into the page.
+  surfaceElevated: '#212121',
+
   textPrimary: '#e0e0e0',
   textSecondary: '#a1a1a1',
   textMuted: '#8c8c8c',
@@ -81,6 +86,7 @@ export const lightColors: ThemeColors = {
 
   surfaceTranslucent: 'rgba(0,0,0,0.04)',
   bubbleUser: '#efede5',
+  surfaceElevated: '#ffffff',
 
   textPrimary: '#1a1a1a',
   textSecondary: '#4a4a4a',
@@ -164,11 +170,14 @@ export const spacing = {
 } as const
 
 export const radii = {
-  row: 6,
-  card: 14,
-  button: 6,
-  input: 6,
-  camera: 8
+  row: 8,
+  card: 16,
+  button: 8,
+  input: 8,
+  camera: 8,
+  // Large containers (the composer) — soft enough to read as a rounded card
+  // rather than a boxed-in field.
+  surface: 22
 } as const
 
 export const typography = {

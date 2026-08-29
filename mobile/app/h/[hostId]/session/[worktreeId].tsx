@@ -823,6 +823,9 @@ export default function SessionScreen() {
   const activeSessionTabIdRef = useRef<string | null>(null)
   // Auto-scroll the tab strip so the desktop-synced active tab is revealed without a manual scroll.
   const tabStripRef = useRef<ScrollView>(null)
+  // Collapsed by default: the strip is permanent chrome for something most
+  // sessions never change. The header's tab count opens it on demand.
+  const [tabStripOpen, setTabStripOpen] = useState(false)
   const tabStripOffsetRef = useRef(0)
   const tabStripViewportWidthRef = useRef(0)
   const tabStripContentWidthRef = useRef(0)
@@ -4384,19 +4387,37 @@ export default function SessionScreen() {
               </Text>
               <Pressable
                 style={styles.sessionMetaRow}
-                disabled={!showConnectionRetry}
+                disabled={!showConnectionRetry && visibleTabs.length === 0}
                 onPress={() => {
-                  if (hostId) {
-                    void forceReconnectHost(hostId)
+                  if (showConnectionRetry) {
+                    if (hostId) {
+                      void forceReconnectHost(hostId)
+                    }
+                    return
                   }
+                  setTabStripOpen((open) => !open)
                 }}
-                accessibilityRole={showConnectionRetry ? 'button' : undefined}
-                accessibilityLabel={showConnectionRetry ? 'Reconnect to desktop' : undefined}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showConnectionRetry
+                    ? 'Reconnect to desktop'
+                    : tabStripOpen
+                      ? 'Hide tabs'
+                      : 'Show tabs'
+                }
               >
                 <StatusDot state={connState} />
                 <Text style={styles.sessionMetaText} numberOfLines={1}>
                   {terminalSummary}
                 </Text>
+                {!showConnectionRetry && visibleTabs.length > 0 ? (
+                  <ChevronDown
+                    size={13}
+                    color={colors.textMuted}
+                    strokeWidth={2.2}
+                    style={tabStripOpen ? styles.tabDisclosureOpen : undefined}
+                  />
+                ) : null}
               </Pressable>
             </View>
             {!isFloatingWorkspaceRoute && (
@@ -4425,7 +4446,7 @@ export default function SessionScreen() {
             ) : null}
           </View>
 
-          {visibleTabs.length > 0 && (
+          {visibleTabs.length > 0 && tabStripOpen && (
             <View style={styles.tabBar}>
               {/* Why: tab taps must register on first press with the keyboard open instead of being eaten by dismissal (#5106). */}
               <ScrollView

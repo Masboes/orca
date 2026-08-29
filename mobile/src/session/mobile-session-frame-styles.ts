@@ -67,6 +67,10 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600'
   },
+  // Flips the disclosure chevron when the tab strip is showing.
+  tabDisclosureOpen: {
+    transform: [{ rotate: '180deg' }]
+  },
   sessionMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',

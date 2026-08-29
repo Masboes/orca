@@ -361,11 +361,11 @@ const styles = StyleSheet.create({
   bar: {
     gap: spacing.xs,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
+    paddingVertical: spacing.sm,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: colors.borderSubtle,
-    borderRadius: radii.card,
-    backgroundColor: colors.bgPanel,
+    borderRadius: radii.surface,
+    backgroundColor: colors.surfaceElevated,
     overflow: 'hidden'
   },
   actionRow: {
@@ -383,11 +383,10 @@ const styles = StyleSheet.create({
     minHeight: 36,
     color: colors.textPrimary,
     fontSize: typography.bodySize + 1,
-    backgroundColor: colors.bgRaised,
-    borderRadius: radii.input,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.sm
+    backgroundColor: 'transparent',
+    paddingHorizontal: 0,
+    paddingTop: spacing.xs,
+    paddingBottom: spacing.xs
   },
   iconButton: {
     width: 36,

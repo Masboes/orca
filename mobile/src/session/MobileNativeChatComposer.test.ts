@@ -105,7 +105,7 @@ describe('MobileNativeChatComposer', () => {
     })
     expect(composer.props.style).toMatchObject({
       borderWidth: 1,
-      borderRadius: radii.card,
+      borderRadius: radii.surface,
       overflow: 'hidden'
     })
   })
