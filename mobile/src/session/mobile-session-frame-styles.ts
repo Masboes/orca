@@ -20,11 +20,20 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     flex: 1,
     minWidth: 0
   },
+  // Lifted out of the flow so the transcript runs beneath its lower edge. No
+  // background of its own — a gradient child paints the ground, opaque behind
+  // the title and clear by the bottom. That is what lets the tab-count line
+  // share its height with the content instead of spending its own.
   sessionChrome: {
-    // Same ground as the page, and no rule beneath it: the transcript's top
-    // fade is the transition now, and a hard edge under it reads as a seam the
-    // fade is trying to dissolve.
-    backgroundColor: colors.bgBase
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    elevation: 20
+  },
+  sessionChromeFade: {
+    ...StyleSheet.absoluteFillObject
   },
   sessionTopBar: {
     minHeight: 34,

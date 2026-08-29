@@ -282,7 +282,11 @@ import {
 } from '../../../../src/session/mobile-session-create-warning-state'
 import { colors } from '../../../../src/theme/mobile-theme'
 import { QuickCommandsTabButton } from '../../../../src/session/QuickCommandsTabButton'
+import { LinearGradient } from 'expo-linear-gradient'
 import { styles } from '../../../../src/session/mobile-session-styles'
+
+// Height of the tab-count line, which the transcript is allowed to run beneath.
+const HEADER_FADE_ZONE = 18
 import type { DiffComment } from '../../../../../src/shared/diff-comment-types'
 import type { TerminalQuickCommand } from '../../../../../src/shared/terminal-quick-command-types'
 import type {
@@ -825,6 +829,10 @@ export default function SessionScreen() {
   // Collapsed by default: the strip is permanent chrome for something most
   // sessions never change. The header's tab count opens it on demand.
   const [tabStripOpen, setTabStripOpen] = useState(false)
+  // Chrome overlays the content so the transcript can run under its lower edge.
+  // Measured rather than assumed: its height moves with the safe-area inset and
+  // whether the tab strip is showing.
+  const [chromeHeight, setChromeHeight] = useState(0)
   const tabStripOffsetRef = useRef(0)
   const tabStripViewportWidthRef = useRef(0)
   const tabStripContentWidthRef = useRef(0)
@@ -4218,6 +4226,14 @@ export default function SessionScreen() {
         ? `${verdictDisplayLabel(connectionVerdict)} — tap to retry`
         : MOBILE_SESSION_STATUS_LABELS[connState]
 
+  // The transcript runs under the chrome's last ~18px — the tab-count line — so
+  // that row shares its height with the content instead of spending its own.
+  // Open tabs cancel it: a ghosted tab strip would be neither readable nor
+  // reliably hittable.
+  const chromeFadeZone = tabStripOpen || chromeHeight === 0 ? 0 : HEADER_FADE_ZONE
+  const chromeContentInset = Math.max(0, chromeHeight - chromeFadeZone)
+  const chromeFadeStart = chromeHeight > 0 ? chromeContentInset / chromeHeight : 1
+
   // Why: iOS keyboard height includes the home-indicator inset; Android IME height does not.
   const keyboardLift =
     keyboardHeight > 0
@@ -4369,7 +4385,17 @@ export default function SessionScreen() {
   return (
     <View ref={setMobileSessionRootRef} style={styles.container}>
       <View style={styles.kavInner}>
-        <SafeAreaView style={styles.sessionChrome} edges={['top']}>
+        <SafeAreaView
+          style={styles.sessionChrome}
+          edges={['top']}
+          onLayout={(e) => setChromeHeight(e.nativeEvent.layout.height)}
+        >
+          <LinearGradient
+            pointerEvents="none"
+            style={styles.sessionChromeFade}
+            colors={[colors.bgBase, colors.bgBase, 'transparent']}
+            locations={[0, chromeFadeStart, 1]}
+          />
           <View style={styles.sessionTopBar}>
             <Pressable
               style={({ pressed }) => [styles.backButton, pressed && styles.backButtonPressed]}
@@ -4556,7 +4582,10 @@ export default function SessionScreen() {
         </SafeAreaView>
 
         {/* Content-row host (KTD2): on wide, content shares this row with the docked panel as the flex-1 left child. */}
-        <View style={styles.sessionContentRow} onLayout={handleSessionContentRowLayout}>
+        <View
+          style={[styles.sessionContentRow, { paddingTop: chromeContentInset }]}
+          onLayout={handleSessionContentRowLayout}
+        >
           <View style={styles.sessionContentMain}>
             {createWarning ? (
               <View style={styles.createWarningBanner}>

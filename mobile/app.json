@@ -84,7 +84,8 @@
         "MODIFY_AUDIO_SETTINGS"
       ],
       "package": "com.stably.orca.mobile",
-      "versionCode": 15
+      "versionCode": 15,
+      "backgroundColor": "#faf9f5"
     },
     "plugins": [
       "expo-router",
