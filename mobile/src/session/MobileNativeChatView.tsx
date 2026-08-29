@@ -13,7 +13,7 @@ import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-ha
 import { ArrowDown } from 'lucide-react-native'
 import type { AskAnswerSelection, AskPrompt } from '../../../src/shared/native-chat-ask'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
-import { colors, spacing } from '../theme/mobile-theme'
+import { colors } from '../theme/mobile-theme'
 import { styles } from './mobile-native-chat-view-styles'
 import {
   buildMobileNativeChatTransientData,
@@ -167,23 +167,15 @@ export function MobileNativeChatView({
   // The composer block docks over the transcript rather than sitting beside it,
   // so prose can run under its top edge and dissolve instead of stopping dead.
   const [dockHeight, setDockHeight] = useState(0)
-  const sendScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const readerHasScrolledRef = useRef(false)
   const { fontScale, pinchGesture } = useMobileNativeChatPinchGesture()
   // Reserves the dock's height as real content rather than container padding:
   // Android's scrollToEnd measures content length, which does not reliably
   // include contentContainerStyle padding, so padding alone leaves the newest
   // message parked under the composer.
   const listFooter = useMemo(
-    () => <View style={{ height: dockHeight + bottomPad + spacing.sm }} />,
+    () => <View style={{ height: dockHeight + bottomPad }} />,
     [dockHeight, bottomPad]
-  )
-  useEffect(
-    () => () => {
-      if (sendScrollTimerRef.current) {
-        clearTimeout(sendScrollTimerRef.current)
-      }
-    },
-    []
   )
 
   // `data` is the list source: folded transcript + synthetic streaming bubble +
@@ -222,15 +214,11 @@ export function MobileNativeChatView({
       // The route-owned banner outlives this send; a success must retire it too,
       // or a stale "Message not sent" sits above the delivered message.
       onClearSendError?.()
-      // Always jump to the newest message when the user sends.
+      // Always jump to the newest message when the user sends. The follow
+      // effect does the scrolling — it already runs on the resulting data
+      // change, so scheduling another here only races it.
       setAtBottom(true)
-      if (sendScrollTimerRef.current) {
-        clearTimeout(sendScrollTimerRef.current)
-      }
-      sendScrollTimerRef.current = setTimeout(() => {
-        sendScrollTimerRef.current = null
-        listRef.current?.scrollToEnd({ animated: true })
-      }, 60)
+      readerHasScrolledRef.current = false
       return true
     },
     [onSend, onClearSendError]
@@ -315,8 +303,11 @@ export function MobileNativeChatView({
               onMomentumScrollEnd={syncAtBottom}
               onScrollEndDrag={syncAtBottom}
               scrollEventThrottle={32}
+              onScrollBeginDrag={() => {
+                readerHasScrolledRef.current = true
+              }}
               onContentSizeChange={() => {
-                if (data.length > 0 && atBottom) {
+                if (data.length > 0 && (atBottom || !readerHasScrolledRef.current)) {
                   listRef.current?.scrollToEnd({ animated: false })
                 }
               }}
