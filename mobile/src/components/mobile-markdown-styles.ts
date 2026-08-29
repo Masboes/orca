@@ -8,7 +8,7 @@ export const styles = StyleSheet.create({
   paragraph: {
     fontFamily: typography.serifFamily,
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 21,
     color: colors.textPrimary
   },
   heading: {
@@ -55,7 +55,7 @@ export const styles = StyleSheet.create({
   quoteText: {
     fontFamily: typography.serifFamily,
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 21,
     color: colors.textSecondary
   },
   codeBlock: {
@@ -134,7 +134,7 @@ export const styles = StyleSheet.create({
   listMarker: {
     width: 22,
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 21,
     color: colors.textSecondary,
     fontFamily: typography.monoFamily
   },
@@ -143,7 +143,7 @@ export const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     fontSize: 13,
-    lineHeight: 19,
+    lineHeight: 21,
     color: colors.textPrimary
   },
   rule: {

@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
     fontFamily: typography.serifFamily,
     color: colors.textSecondary,
     fontSize: TEXT_SIZE,
-    lineHeight: TEXT_SIZE + 6
+    lineHeight: TEXT_SIZE + 10
   },
   controls: {
     flexDirection: 'row',
