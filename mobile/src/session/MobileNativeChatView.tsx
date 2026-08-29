@@ -169,10 +169,12 @@ export function MobileNativeChatView({
   const [dockHeight, setDockHeight] = useState(0)
   const sendScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { fontScale, pinchGesture } = useMobileNativeChatPinchGesture()
-  // Memoised: a new array each render would churn the list's identity and
-  // retrigger the autoscroll on every frame.
-  const listContentStyle = useMemo(
-    () => [styles.listContent, { paddingBottom: dockHeight + bottomPad + spacing.sm }],
+  // Reserves the dock's height as real content rather than container padding:
+  // Android's scrollToEnd measures content length, which does not reliably
+  // include contentContainerStyle padding, so padding alone leaves the newest
+  // message parked under the composer.
+  const listFooter = useMemo(
+    () => <View style={{ height: dockHeight + bottomPad + spacing.sm }} />,
     [dockHeight, bottomPad]
   )
   useEffect(
@@ -209,7 +211,7 @@ export function MobileNativeChatView({
     }
     const t = setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 60)
     return () => clearTimeout(t)
-  }, [data.length, atBottom, keyboardInset, dockHeight])
+  }, [data.length, atBottom, keyboardInset])
 
   const handleSend = useCallback(
     async (text: string): Promise<boolean> => {
@@ -305,7 +307,7 @@ export function MobileNativeChatView({
               data={data}
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
-              contentContainerStyle={listContentStyle}
+              contentContainerStyle={styles.listContent}
               // Let link/file taps land while the composer keyboard is up
               // instead of being swallowed by the dismiss gesture.
               keyboardShouldPersistTaps="handled"
@@ -348,6 +350,7 @@ export function MobileNativeChatView({
                   </Pressable>
                 ) : null
               }
+              ListFooterComponent={listFooter}
               ListEmptyComponent={
                 emptyState ? (
                   <View style={styles.center}>
