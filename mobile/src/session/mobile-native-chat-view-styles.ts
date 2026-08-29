@@ -46,6 +46,21 @@ export const styles = StyleSheet.create({
     flex: 1,
     position: 'relative'
   },
+  // Docked over the transcript. `bottom` is set inline from the keyboard inset
+  // so it rides above the IME rather than behind it.
+  dock: {
+    position: 'absolute',
+    left: 0,
+    right: 0
+  },
+  // Sits above the dock's own content, hence the negative offset.
+  dockFade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: -36,
+    height: 36
+  },
   listContent: {
     paddingVertical: spacing.sm,
     flexGrow: 1

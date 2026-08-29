@@ -10,10 +10,11 @@ import {
 } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler'
-import { ArrowDown, Square } from 'lucide-react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { ArrowDown } from 'lucide-react-native'
 import type { AskAnswerSelection, AskPrompt } from '../../../src/shared/native-chat-ask'
 import type { NativeChatMessage } from '../../../src/shared/native-chat-types'
-import { colors } from '../theme/mobile-theme'
+import { colors, spacing } from '../theme/mobile-theme'
 import { styles } from './mobile-native-chat-view-styles'
 import {
   buildMobileNativeChatTransientData,
@@ -21,7 +22,7 @@ import {
   type MobileNativeChatPendingItem
 } from './mobile-native-chat-render-data'
 import { useMobileNativeChatPinchGesture } from './use-mobile-native-chat-pinch-gesture'
-import { MobileAgentWorkingIndicator } from './MobileAgentWorkingIndicator'
+import { MobileNativeChatWorkingBar } from './MobileNativeChatWorkingBar'
 import type { PendingNativeChatImage } from './mobile-native-chat-image-attachment'
 import { MobileNativeChatComposer } from './MobileNativeChatComposer'
 import type { MobileNativeChatSessionOptionPickersProps } from './MobileNativeChatSessionOptionPickers'
@@ -164,6 +165,9 @@ export function MobileNativeChatView({
   // never sits under the home indicator / nav bar (mirrors the terminal dock).
   const bottomPad = keyboardInset > 0 ? keyboardInset + insets.bottom : insets.bottom
   const [atBottom, setAtBottom] = useState(true)
+  // The composer block docks over the transcript rather than sitting beside it,
+  // so prose can run under its top edge and dissolve instead of stopping dead.
+  const [dockHeight, setDockHeight] = useState(0)
   const sendScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { fontScale, pinchGesture } = useMobileNativeChatPinchGesture()
   useEffect(
@@ -283,7 +287,7 @@ export function MobileNativeChatView({
   const lockReason = lockHeld ? (rawLockReason ?? 'waiting') : null
 
   return (
-    <View style={[styles.root, { paddingBottom: bottomPad }]}>
+    <View style={styles.root}>
       {showLoading ? (
         <View style={styles.center}>
           <ActivityIndicator color={colors.textSecondary} />
@@ -296,7 +300,10 @@ export function MobileNativeChatView({
               data={data}
               keyExtractor={(item) => item.id}
               renderItem={renderItem}
-              contentContainerStyle={styles.listContent}
+              contentContainerStyle={[
+                styles.listContent,
+                { paddingBottom: dockHeight + bottomPad + spacing.sm }
+              ]}
               // Let link/file taps land while the composer keyboard is up
               // instead of being swallowed by the dismiss gesture.
               keyboardShouldPersistTaps="handled"
@@ -362,6 +369,18 @@ export function MobileNativeChatView({
           ) : null}
         </GestureHandlerRootView>
       )}
+      <View
+        style={[styles.dock, { bottom: bottomPad }]}
+        onLayout={(e) => setDockHeight(e.nativeEvent.layout.height)}
+      >
+        {/* Mirror of the header ramp: prose dissolves into the composer rather
+            than being clipped by its top edge. Ends on the page colour at zero
+            alpha — 'transparent' is rgba(0,0,0,0) and would drag it to black. */}
+        <LinearGradient
+          pointerEvents="none"
+          style={styles.dockFade}
+          colors={[colors.bgBaseFade, colors.bgBase]}
+        />
       {/* Pending agent prompt: a structured AskUserQuestion wins, then a
           heuristic permission, then a heuristic question. The controller owns
           dismissal (it must survive this subtree unmounting on a view toggle);
@@ -398,26 +417,7 @@ export function MobileNativeChatView({
           onAnswer={async (text) => (await onAnswerQuestion?.(text)) ?? false}
         />
       ) : null}
-      {/* Chrome row above the composer: working indicator on the left, Stop in
-          the far corner. Only while the agent runs — at rest it would be an
-          empty bar, and the tools toggle it used to hold now lives in the
-          composer's action row. */}
-      {agentWorking ? (
-        <View style={styles.chromeRow}>
-          <View style={styles.chromeLeft}>
-            <MobileAgentWorkingIndicator />
-          </View>
-          <Pressable
-            style={({ pressed }) => [styles.stopButton, pressed && styles.pressed]}
-            onPress={onStop}
-            hitSlop={8}
-            accessibilityLabel="Stop the agent"
-          >
-            <Square size={13} color={colors.statusRed} strokeWidth={2.4} fill={colors.statusRed} />
-            <Text style={styles.stopLabel}>Stop</Text>
-          </Pressable>
-        </View>
-      ) : null}
+      {agentWorking ? <MobileNativeChatWorkingBar onStop={onStop} /> : null}
       {sendErrorMessage ? (
         // This banner is the only channel for a send failure — announce it.
         <View
@@ -456,6 +456,7 @@ export function MobileNativeChatView({
         filePaths={filePaths}
         onNeedFiles={onNeedFiles}
       />
+      </View>
     </View>
   )
 }
