@@ -28,11 +28,23 @@ export const mobileSessionFrameStyles = StyleSheet.create({
     borderBottomColor: colors.borderSubtle
   },
   sessionTopBar: {
-    minHeight: 38,
+    minHeight: 34,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.sm,
     paddingVertical: 2
+  },
+  // Centred over the bar rather than flexed between the controls: the left has
+  // one button and the right has three, so a flex child would sit off-centre.
+  // Absolute keeps the title optically centred whatever the sides hold.
+  sessionTitleCentered: {
+    position: 'absolute',
+    left: 64,
+    right: 64,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center'
   },
   backButton: {
     width: 36,
@@ -67,7 +79,8 @@ export const mobileSessionFrameStyles = StyleSheet.create({
   sessionTitle: {
     color: colors.textPrimary,
     fontSize: 14,
-    fontWeight: '600'
+    fontWeight: '600',
+    textAlign: 'center'
   },
   // Flips the disclosure chevron when the tab strip is showing.
   tabDisclosureOpen: {

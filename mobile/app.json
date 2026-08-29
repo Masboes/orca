@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Orca",
+    "name": "Boezer AI",
     "slug": "orca-mobile",
     "version": "0.0.47",
     "orientation": "default",
@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#111111"
+      "backgroundColor": "#faf9f5"
     },
     "ios": {
       "supportsTablet": true,
@@ -75,7 +75,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#111111"
+        "backgroundColor": "#ffffff"
       },
       "usesCleartextTraffic": true,
       "allowBackup": false,
@@ -93,7 +93,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
-          "backgroundColor": "#111111"
+          "backgroundColor": "#faf9f5"
         }
       ],
       [
