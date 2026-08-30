@@ -1,8 +1,8 @@
 import type { RuntimeMobileTerminalTheme } from '../../../src/shared/runtime-types'
 import { activeTheme, darkColors, lightColors } from '../theme/mobile-theme'
 
-// Tokyo Night, and its light counterpart Tokyo Night Day — same hue family, so
-// the pair reads as one scheme rather than two unrelated themes.
+// Dark keeps Tokyo Night; light mirrors the desktop's Builtin Tango Light, so a
+// session rendered on the phone matches the one on the desktop.
 export const DARK_TERMINAL_THEME: RuntimeMobileTerminalTheme['theme'] = {
   background: darkColors.terminalBg,
   foreground: '#c0caf5',
@@ -29,28 +29,32 @@ export const DARK_TERMINAL_THEME: RuntimeMobileTerminalTheme['theme'] = {
 }
 
 export const LIGHT_TERMINAL_THEME: RuntimeMobileTerminalTheme['theme'] = {
+  // Mirrors the desktop's Builtin Tango Light so a session looks the same on
+  // both, only the background follows the app's page colour instead of pure
+  // white. Its neutral foreground is the point: a tinted one (Tokyo Night Day
+  // tried #3760bf) casts the whole transcript blue, which desktop never does.
   background: lightColors.terminalBg,
-  foreground: '#3760bf',
-  cursor: '#3760bf',
+  foreground: '#2e3434',
+  cursor: '#2e3434',
   cursorAccent: lightColors.terminalBg,
-  selectionBackground: '#b6bfe2',
-  selectionForeground: '#3760bf',
-  black: '#b4b5b9',
-  red: '#f52a65',
-  green: '#587539',
-  yellow: '#8c6c3e',
-  blue: '#2e7de9',
-  magenta: '#9854f1',
-  cyan: '#007197',
-  white: '#6172b0',
-  brightBlack: '#a1a6c5',
-  brightRed: '#f52a65',
-  brightGreen: '#587539',
-  brightYellow: '#8c6c3e',
-  brightBlue: '#2e7de9',
-  brightMagenta: '#9854f1',
-  brightCyan: '#007197',
-  brightWhite: '#3760bf'
+  selectionBackground: '#accef7',
+  selectionForeground: '#2e3434',
+  black: '#2e3436',
+  red: '#cc0000',
+  green: '#4e9a06',
+  yellow: '#8e7700',
+  blue: '#3465a4',
+  magenta: '#75507b',
+  cyan: '#05727e',
+  white: '#6a6a6a',
+  brightBlack: '#555753',
+  brightRed: '#ef2929',
+  brightGreen: '#1b7a1b',
+  brightYellow: '#6d5a00',
+  brightBlue: '#204a87',
+  brightMagenta: '#ad7fa8',
+  brightCyan: '#034b50',
+  brightWhite: '#3d3d3d'
 }
 
 // The background tracks the app's page colour: in terminal mode the terminal is
