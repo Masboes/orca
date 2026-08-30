@@ -125,10 +125,10 @@ export const lightColors: ThemeColors = {
   syntaxVariable: '#001080',
   syntaxMeta: '#af00db',
 
-  // The terminal WebView keeps its own Tokyonight scheme in both themes; a
-  // terminal that stays dark under a light UI is conventional, and the webview
-  // owns a full 16-color ANSI palette that is not expressible in these tokens.
-  terminalBg: '#1a1b26'
+  // Matches the page rather than staying dark. In terminal mode the terminal is
+  // the whole screen, so a dark pane under a light app reads as a bug, not as
+  // the convention it is when the terminal is one pane among several.
+  terminalBg: '#faf9f5'
 }
 
 const palettes: Record<ThemeName, ThemeColors> = {
@@ -194,8 +194,8 @@ export const typography = {
   // Agent prose only. UI chrome stays on the system sans — mixing a serif into
   // buttons and tabs reads as costume rather than design. Registered in
   // app/_layout.tsx; these names must match the useFonts keys.
-  serifFamily: 'Lora_400Regular' as const,
-  serifItalicFamily: 'Lora_400Regular_Italic' as const,
-  serifSemiBoldFamily: 'Lora_600SemiBold' as const,
-  serifBoldFamily: 'Lora_700Bold' as const
+  serifFamily: 'TiemposText_Regular' as const,
+  serifItalicFamily: 'TiemposText_RegularItalic' as const,
+  serifSemiBoldFamily: 'TiemposText_Semibold' as const,
+  serifBoldFamily: 'TiemposText_Bold' as const
 } as const
