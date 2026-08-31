@@ -689,7 +689,7 @@ describe('buildSections', () => {
     expect(sections[0]?.data.map((worktree) => worktree.worktreeId)).toEqual(['progress'])
   })
 
-  it('keeps pinned worktrees in their canonical status group like desktop', () => {
+  it('lifts a pinned worktree out of its status group, as desktop does by default', () => {
     const pinned = worktree({
       worktreeId: 'pinned',
       workspaceStatus: 'in-progress',
@@ -705,6 +705,34 @@ describe('buildSections', () => {
       new Set(),
       new Map(),
       DEFAULT_MOBILE_WORKSPACE_STATUSES
+    )
+
+    // Desktop's pinnedDisplayPolicy defaults to 'single-location'; the empty
+    // status group must not be emitted either, or the board shows a header with
+    // nothing under it.
+    expect(withoutSectionListKeys(sections)).toEqual([
+      { key: 'pinned', title: 'Pinned', icon: 'pin', data: [pinned] }
+    ])
+  })
+
+  it('duplicates a pinned worktree into its group when that is opted into', () => {
+    const pinned = worktree({
+      worktreeId: 'pinned',
+      workspaceStatus: 'in-progress',
+      isPinned: true
+    })
+
+    const sections = buildSections(
+      [pinned],
+      'manual',
+      { filterRepoIds: new Set(), hideSleeping: false, hideDefaultBranch: false },
+      '',
+      'workspaceStatus',
+      new Set(),
+      new Map(),
+      DEFAULT_MOBILE_WORKSPACE_STATUSES,
+      new Set(),
+      true
     )
 
     expect(withoutSectionListKeys(sections)).toEqual([
