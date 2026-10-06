@@ -49,6 +49,8 @@ export type RpcClient = {
 export type ConnectOptions = {
   onStateChange?: (state: ConnectionState) => void
   onLog?: ConnectionLogSink
+  // Off for short-lived direct-path candidates; the long-lived session probes.
+  reachabilityProbing?: boolean
 }
 
 export function connect(

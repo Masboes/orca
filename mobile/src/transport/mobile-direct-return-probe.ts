@@ -16,7 +16,7 @@ export class DirectReturnProbe {
       now: () => number
       setTimer: typeof setTimeout
       clearTimer: typeof clearTimeout
-      openDirect: (endpoint: string) => RpcClient
+      openDirect: (endpoint: string, options?: { probe?: boolean }) => RpcClient
     },
     private readonly hooks: {
       hysteresis: MobileEndpointHysteresis
@@ -57,7 +57,7 @@ export class DirectReturnProbe {
     try {
       successful = await openAuthenticatedDirectEndpoint(
         this.hooks.host(),
-        this.deps.openDirect,
+        (endpoint) => this.deps.openDirect(endpoint, { probe: true }),
         12_000
       )
       if (!successful) {

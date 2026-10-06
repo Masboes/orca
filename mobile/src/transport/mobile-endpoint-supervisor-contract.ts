@@ -6,7 +6,7 @@ import type { RpcClient } from './rpc-client'
 import type { ConnectionLogSink, HostProfile } from './types'
 
 export type MobileEndpointSupervisorDependencies = {
-  openDirect: (endpoint: string) => RpcClient
+  openDirect: (endpoint: string, options?: { probe?: boolean }) => RpcClient
   openRelay: (
     relay: MobileRelayEndpoint,
     credential: { token: string; version: number },

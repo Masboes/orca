@@ -51,6 +51,7 @@ export type ConnectionDiagnosticCode =
   | 'socket-closed'
   | 'liveness-timeout'
   | 'retry-scheduled'
+  | 'fast-reconnect'
   | 'relay-dial-failed'
   | 'relay-session-failed'
   | 'relay-connected'

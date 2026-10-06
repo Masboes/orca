@@ -16,7 +16,12 @@ import {
   type RpcStreamSubscribeOptions
 } from './rpc-client-stream-registry'
 import { RpcSessionLivenessWatchdog } from './rpc-session-liveness-watchdog'
-import { isStaleForegroundDial } from './rpc-stale-dial'
+import { RpcReachabilityBurst } from './rpc-reachability-burst'
+import {
+  applyForegroundNudge,
+  redialOnHostAnswer,
+  type ClientNudgeContext
+} from './rpc-foreground-nudge'
 import type { ConnectionState, ForegroundNudgeReason, RpcResponse } from './types'
 
 const LIVENESS_REQUEST_ID_PREFIX = 'mobile-liveness-'
@@ -36,6 +41,8 @@ export class DirectRpcClient implements RpcClient {
   private intentionallyClosed = false
   private authenticationGeneration = 0
   private livenessSession: RpcClientSocketSession | null = null
+  private readonly reachability: RpcReachabilityBurst
+  private readonly nudge: ClientNudgeContext
 
   constructor(
     private readonly endpoint: string,
@@ -125,7 +132,28 @@ export class DirectRpcClient implements RpcClient {
       emitWarning: (message, detail, evidence) =>
         this.connectionLog.emit('warn', message, detail, evidence)
     })
+    this.reachability = new RpcReachabilityBurst({
+      endpoint,
+      onReachable: (sentAt) => redialOnHostAnswer(this.nudge, sentAt),
+      coldStart: options.reachabilityProbing !== false,
+      emitLog: (m, d) => this.connectionLog.emit('info', m, d, { code: 'fast-reconnect' })
+    })
+    this.nudge = {
+      isClosed: () => this.intentionallyClosed,
+      getState: () => this.getState(),
+      getSession: () => this.socketSession,
+      getLivenessSession: () => this.livenessSession,
+      getInboundCount: () => this.liveness.getInboundCount(),
+      getDialStartedAt: () => this.socketFactory.getDialStartedAt(),
+      reconnect: this.reconnect,
+      reachability: this.reachability,
+      probe: () => this.livenessSession && this.liveness.probeNow(this.livenessSession),
+      forceClose: (session) => this.socketClose.forceClose(session),
+      emitWarning: (m, d) => this.connectionLog.emit('warn', m, d, { code: 'liveness-timeout' }),
+      resumeSuspect: null
+    }
     this.openConnection()
+    this.reachability.start('cold-start')
   }
 
   sendRequest(
@@ -170,39 +198,13 @@ export class DirectRpcClient implements RpcClient {
     return this.connectionState.addListener(listener)
   }
 
-  notifyForeground(_reason?: ForegroundNudgeReason): void {
-    if (this.intentionallyClosed) {
-      return
-    }
-    if (this.getState() === 'connected') {
-      console.log('[net] foreground — probing live connection')
-      if (this.livenessSession) {
-        this.liveness.probeNow(this.livenessSession)
-      }
-      return
-    }
-    const dialing = this.socketSession
-    const dialAgeMs = Date.now() - this.socketFactory.getDialStartedAt()
-    let abandoned = false
-    if (dialing && isStaleForegroundDial(this.getState(), dialAgeMs)) {
-      console.log('[net] foreground — abandoning stale dial', {
-        state: this.getState(),
-        dialAgeMs
-      })
-      this.socketClose.forceClose(dialing)
-      abandoned = true
-    }
-    if (this.getState() === 'reconnecting') {
-      console.log('[net] foreground — restarting reconnect loop', {
-        attempt: this.getReconnectAttempt(),
-        hadTimer: this.reconnect.hasTimer()
-      })
-      this.reconnect.redialNow(!abandoned)
-    }
+  notifyForeground(reason: ForegroundNudgeReason = 'app-resume'): void {
+    applyForegroundNudge(this.nudge, reason)
   }
 
   close(): void {
     this.intentionallyClosed = true
+    this.reachability.stop()
     this.reconnect.cancel()
     const session = this.socketSession
     session?.clearTimers()
@@ -229,6 +231,7 @@ export class DirectRpcClient implements RpcClient {
     console.log('[net] e2ee_authenticated — connected', { streamCount: this.streams.size() })
     this.livenessSession = session
     this.liveness.start(session)
+    this.reachability.stop()
     this.authenticationGeneration++
     this.reconnect.authenticated()
     this.authenticationRetry.accepted()
@@ -260,6 +263,7 @@ export class DirectRpcClient implements RpcClient {
   }
 
   private retryAuthentication(reason: string): void {
+    this.reachability.stop()
     const closing = this.socketSession
     this.socketSession = null
     closing?.clearKey()
@@ -272,6 +276,7 @@ export class DirectRpcClient implements RpcClient {
 
   private latchAuthenticationFailure(reason: string): void {
     this.intentionallyClosed = true
+    this.reachability.stop()
     this.socketSession?.close()
     this.socketSession = null
     this.connectionState.publish('auth-failed')

@@ -104,6 +104,9 @@ export class RpcClientSocketSession {
   private attachHandlers(): void {
     this.socket.onopen = () => {
       if (this.isStale('open')) {
+        // RN Android cannot cancel a dial before it opens, so an abandoned one
+        // can still land here; close it now that closing actually works.
+        this.socket.close()
         return
       }
       console.log('[net] ws.onopen', { attempt: this.options.getReconnectAttempt() })

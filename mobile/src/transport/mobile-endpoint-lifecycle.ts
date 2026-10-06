@@ -85,7 +85,11 @@ function createSupervisor(
   onLog: ConnectionLogSink
 ): MobileEndpointSupervisor {
   return new MobileEndpointSupervisor(logical, host, {
-    openDirect: (endpoint) => connect(endpoint, host.deviceToken, host.publicKeyB64, { onLog }),
+    openDirect: (endpoint, options) =>
+      connect(endpoint, host.deviceToken, host.publicKeyB64, {
+        onLog,
+        reachabilityProbing: !options?.probe
+      }),
     openRelay: (relay, credential, confirmReqId) =>
       connectMobileRelayRpcSession({
         relay,

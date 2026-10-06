@@ -32,6 +32,7 @@ export class RpcSessionLivenessWatchdog {
   private probing = false
   private missedProbes = 0
   private lastInboundAt = 0
+  private inboundCount = 0
   private lastVoluntaryProbeAt: number | null = null
   private readonly idleProbeMs: number | null
   private readonly probeTimeoutMs: number
@@ -68,11 +69,18 @@ export class RpcSessionLivenessWatchdog {
     return this.lastInboundAt
   }
 
+  // Monotonic count of frames from the current session; unlike the timestamp it
+  // still changes when a reply lands in the same millisecond as a probe.
+  getInboundCount(): number {
+    return this.inboundCount
+  }
+
   noteAuthenticatedInbound(identity: RpcSessionIdentity): void {
     if (this.identity !== identity) {
       return
     }
     this.lastInboundAt = this.now()
+    this.inboundCount++
     if (this.missedProbes > 0) {
       console.log('[net] activity-probe recovered', {
         transport: this.options.transport,
